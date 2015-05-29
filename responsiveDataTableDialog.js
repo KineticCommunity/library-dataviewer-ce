@@ -1,6 +1,35 @@
 
 
 $(document).ready(function() {
+	$( ".content-slide" ).after( "<div id='slide-panel'></div>" );
+	
+	$('#name_search input').keypress(function(e) {
+    if(e.which == 13) {
+        $(this).siblings().find('i').removeClass('fa-search').addClass('fa-spinner fa-pulse');
+		performBridgeRequest(peopleTables.requestedForTableConfig);
+    }
+	});
+	$('#name_search a').click(function(e) {
+         $(this).find('i').removeClass('fa-search').addClass('fa-spinner fa-pulse');
+		performBridgeRequest(peopleTables.requestedForTableConfig);
+	});
+	
+	var timer;
+	$('#name_search input').keyup(function() {
+		if (timer) {
+			clearTimeout(timer);
+		}
+		//timer = setTimeout("alert($('#name_search input').val());", 500);
+		timer = setTimeout("performBridgeRequestList(peopleTables.requestedForTableConfig2);", 500);
+			//performBridgeRequest2(peopleTables.requestedForTableConfig);
+		//	$(this).siblings().find('i').removeClass('fa-search').addClass('fa-spinner fa-pulse');
+
+	});
+
+
+$('#Search').keypress(function () { 
+    
+});
 	/***************** CONFIGURE: the Fields to be used in the table *****************
 	//This Array of objects defines searching and behavior for Simple Data Requests (SDRs).
 	//Each Object in the array defines a search and its behavior and must be created with a
@@ -8,35 +37,55 @@ $(document).ready(function() {
 	/*********************************************************************************/
 	var tableDefaults = {
 		initiateSearch: function (SRID){defaultSearch(this, SRID)},
-		rowclick: function (){defaultRowCallback(this);},
+		//rowclick: function (){defaultRowCallback(this);},
 		paging: true,
 		info: true,
 		searching: true,
-		responsive: true,
-		//records: {},  //Set in the core code with values from SDR
+		//responsive: true,
+		responsive: {
+			details: {
+				type: 'column',
+				//target: $('.dataTable tbody td').not('.select'),
+				//target: '.all',
+				target: '.control, .control-additional'
+			}
+		},
 	};
+	var listDefaults = {
+
+	};
+	
 	peopleTables = {
-		//Configuration of Search for Gov't Sponsor.  Initiated by event on "ARS Search Govt Sponsor"
-		sponsorTableConfig: {
+		requestedForTableConfig: {
+			type: "DataTable",
 			//Where to append the table
-			appendTableTo: $('body'),
+			appendTo: $('#slide-panel'),
 			//ID to give the table when creating it.
-			tableId: 'sponsorTable',
+			tableId: 'requestedForTable',
 			//After the Table has been created.
 			afterInit: function(){ //completeCallback
-				$('#sponsorTable').wrap('<div id="dialog" title="Basic dialog"><div id="userTable" style="width:99%;"></div><div style="clear:both;"></div></div>');  //use appends
-				$( "#dialog" ).dialog( {
-					"autoOpen": false,
-					"width": "auto",
-					buttons: [
-						{
-						  text: "Cancel",
-						  click: function() {
-							$( this ).dialog( "close" );
-						  }
-						}
-					]
-				} );
+				
+			},
+			loadedcallback: function(){
+				var panel = $('#slide-panel');
+				//if (!panel.hasClass("visible")) {
+					panel.addClass('visible').animate({
+						'right': '0'
+					});
+				//}
+				//KD.utils.Action.insertElement('RequestedForTable');
+				$('#'+this.tableId + ' tr td:first-child').on('click',function(){
+					defaultRowCallback(this);
+					$('input#name_search').val(KD.utils.Action.getQuestionValue('ReqFor_First Name')+ ' ' + KD.utils.Action.getQuestionValue('ReqFor_Last Name'));
+					//KD.utils.Action.removeElement('RequestedForTable');
+					$('#name_search a').find('i').removeClass('fa-spinner fa-pulse').addClass('fa-search');
+					var panel = $('#slide-panel');
+					//if (panel.hasClass("visible")) {
+						panel.removeClass('visible').animate({
+							'right': '-100%'
+						});
+					//} 
+				});
 			},
 			/*Configure the data to be displayed in the table and set into Question Values
 			//This is a modified object used by Datatables.net.  setQstn has been added to it.
@@ -46,12 +95,12 @@ $(document).ready(function() {
 			//setQstn: Question Element to be set with the selected value. (Only when defaultRowCallback is used)
 			*/
 			columns: [
-				{ data: 'First Name', "title":"FIRST", "setQstn":"Govt Sponsor First Name" },
-				{ data: 'Last Name', "title":"LAST", "setQstn":"Govt Sponsor Last Name" },
-				{ data: 'Email', "title":"EMAIL", "setQstn":"Govt Sponsor UserID" },
-				{ data: 'Phone Number', "title":"PHONE" },
-				{ data: 'Site', "title":"SITE" },
-				{ data: 'Email', "visible": false, "setQstn":"Govt Sponsor Email"}
+				{ data: 'select', "title":"SELECT",	orderable: false, width: 60,			className: "select" },
+				{ data: 'First Name', "title":"FIRST", "setQstn":"ReqFor_First Name",		className: "control" },
+				{ data: 'Last Name', "title":"LAST", "setQstn":"ReqFor_Last Name",			className: "min-phone-l control-additional" },
+				{ data: 'Email', "title":"EMAIL", "setQstn":"ReqFor_Email",					className: "min-tablet control-additional" },
+				{ data: 'Login Id', "title":"LOGIN ID", "setQstn":"ReqFor_Login ID",		className: "none " },
+				{ data: 'Work Phone Number', "title":"PHONE #", "setQstn":"ReqFor_Phone",	className: "none" },
 			],
 			//Params to be created and passed to the Simple Data Request (SDR).  SDR may be created to accept parameters
 			//which can be passed into the query. Passed into SDR as: "lname=Bob&Status=Active" 
@@ -70,45 +119,46 @@ $(document).ready(function() {
 				alert("No results Found")
 			}
 		},
-		approverTableConfig: {
-			rowclick: function(){
-				alert('test');
-				defaultRowCallback(this);
+		requestedForTableConfig2: {
+			type: "List",
+			bridgeConfig:{
+				model: "Person",
+				qualification_mapping: "By Full Name",
+				//Params to be created and passed to the Bridge.  VALUE MUST BE JQUERY SELECTOR.
+				parameters: {'Full Name': '#name_search input'},
+				//CONFIGURE: Bridge Attributes to be returned
+				attributes: ["First Name","Last Name","Email","Login Id","Work Phone Number"],
+					},
+			//Where to append the table
+			appendTo: $('#DYNAMIC_TEXT_KSHAA5V0HJEMVANOR2RUDKJ9A318PZ'),
+			//ID to give the table when creating it.
+			tableId: 'requestedForTable',
+			//After the Table has been created.
+			afterInit: function(){ //completeCallback
+				
 			},
-			appendTableTo: $('body'),
-			tableId: 'approverTable',
-			afterInit: function(){
-				$('#approverTable').wrap('<div id="sponsor_dialog" title="Basic dialog"><div id="userTable" style="width:99%;"></div><div style="clear:both;"></div></div>');
-				$( "#sponsor_dialog" ).dialog( {
-					"autoOpen": false,
-					"width": "auto",
-					buttons: [
-						{
-						  text: "Cancel",
-						  click: function() {
-							$( this ).dialog( "close" );
-						  }
-						}
-					]
-				} );
+			loadedcallback: function(){
+
 			},
+			/*Configure the data to be displayed in the table and set into Question Values
+			//This is a modified object used by Datatables.net.  setQstn has been added to it.
+			//columns: Array of Objects.
+			//data: Must match the data returned by the Simple Data Request.
+			//title: Display name used in the table header.
+			//setQstn: Question Element to be set with the selected value. (Only when defaultRowCallback is used)
+			*/
 			columns: [
-				{ data: 'First Name', "title":"FIRST", "setQstn":"SPAWAR Approver First" },
-				{ data: 'Last Name', "title":"LAST", "setQstn":"SPAWAR Approver Last" },
-				{ data: 'Email', "title":"EMAIL", "setQstn":"SPAWAR Approver UserID" },
-				{ data: 'Phone Number', "title":"PHONE" },
-				{ data: 'Site', "title":"SITE" },
-				{ data: 'Email', "visible": false, "setQstn":"SPAWAR Approver Email"}
+				{ data: 'select', "title":"SELECT",	orderable: false, width: 60,			className: "select" },
+				{ data: 'First Name', "title":"FIRST", "setQstn":"ReqFor_First Name",		className: "control" },
+				{ data: 'Last Name', "title":"LAST", "setQstn":"ReqFor_Last Name",			className: "min-phone-l control-additional" },
+				{ data: 'Email', "title":"EMAIL", "setQstn":"ReqFor_Email",					className: "min-tablet control-additional" },
+				{ data: 'Login Id', "title":"LOGIN ID", "setQstn":"ReqFor_Login ID",		className: "none " },
+				{ data: 'Work Phone Number', "title":"PHONE #", "setQstn":"ReqFor_Phone",	className: "none" },
 			],
-			params: {
-				lname: function() {
-					return  ucFirst(KD.utils.Action.getQuestionValue('SPAWAR Approver'));
-				},
-				status: "Active"
-			},
+			
+			//Define action to take place after SDR is complete.
 			done: function (){
-				KD.utils.Action.setQuestionValue('Search By Last Name','');	
-				$( "#sponsor_dialog" ).dialog("open");
+				
 			},
 			noResults: function(){
 				alert("No results Found")
@@ -117,44 +167,48 @@ $(document).ready(function() {
 	}
 
 	$.each(peopleTables, function(i, config){
-		//config = $.extend( true, tableDefaults, config );
+		if(config.type=="DataTable"){
+			config=$.extend( {}, tableDefaults, config );
+			$table =($('<table>', {'cellspacing':'0', 'border':'0', 'class': 'display'})).attr('id',config.tableId);
+			config.appendTo.append($table);
+			//config.afterInit();
+			peopleTables[i].tableObj = $('#'+config.tableId).DataTable( config );
+			config.afterInit();
+		}
+		else if(config.type=="List"){
+			config=$.extend( {}, listDefaults, config );
+			config.appendTo.append("<div id='results'>");
+			config.afterInit();
+		}
+		/* Legacy code - Save for a bit longer
 		peopleTables[i]=$.extend( {}, tableDefaults, peopleTables[i] );
 		$table =($('<table>', {'cellspacing':'0', 'border':'0', 'class': 'display'})).attr('id',peopleTables[i].tableId);
-		peopleTables[i].appendTableTo.append($table);
-		peopleTables[i].afterInit();
+		peopleTables[i].appendTo.append($table);
+		//peopleTables[i].afterInit();
 		peopleTables[i].tableObj = $('#'+peopleTables[i].tableId).DataTable( peopleTables[i] );
+		peopleTables[i].afterInit();
+		
 		//peopleTables[i].rowclick();
-		peopleTables[i].tableObj.on( 'click', 'tr', peopleTables[i].rowclick);
+		//peopleTables[i].tableObj.on( 'click', 'tr', peopleTables[i].rowclick);
+		//peopleTables[i].tableObj.on( 'click', peopleTables[i].rowclick);
+		*/
 		});
-	
-	/*
-	for(var i=0;i<arrayOfTable.length; i++){
-		//arrayOfTable[i] = $.extend( true, tableDefaults, arrayOfTable[i] );
-		arrayOfTable[i] = $.extend( {}, tableDefaults, arrayOfTable[i] );
-		var $table =($('<table>', {'cellspacing':'0', 'border':'0', 'class': 'display'})).attr('id',arrayOfTable[i].tableId);
-		arrayOfTable[i].appendTableTo.append($table);
-		arrayOfTable[i].afterInit();
-		arrayOfTable[i].tableObj = $('#'+arrayOfTable[i].tableId).DataTable( arrayOfTable[i] );
-	}
-	*/
-
 } );
 
-/*
-function defaultRowCallback() { //rowCallback
-	var table = this;
-	table.tableObj.on( 'click', 'tr', function () { 
-		var selectedRow = table.tableObj.row( this ).index();
-		$.each(table.columns, function( j, v){
-			if(v["setQstn"]!="" && typeof v["setQstn"] != "undefined"){
-				KD.utils.Action.setQuestionValue(v["setQstn"],table.tableObj.row( selectedRow ).data()[v["data"]]);
-			}
-		});
-		$(".ui-dialog-content").dialog("close");
+function defaultRowCallback(row){ //rowCallback
+	var id = $(row).closest('table').attr('id');
+	selectedRow = $(row).closest('tr');
+	table = filterByTableId (peopleTables, id);
+	
+	$.each(table[0].columns, function( j, v){
+		if(v["setQstn"]!="" && typeof v["setQstn"] != "undefined"){
+			KD.utils.Action.setQuestionValue(v["setQstn"],table[0].tableObj.row(selectedRow).data()[v["data"]]);
+			//                                      $('#'+table[0].tableId).DataTable().row($(row).closest('tr')).data()
+		}
 	});
+	$(".ui-dialog-content").dialog("close");
 }
-*/
-
+/* Previous Version of Default Row callback
 function defaultRowCallback(row){ //rowCallback
 	var id = $(row).closest('table').attr('id');
 	var selectedRow = $(row).index();
@@ -167,7 +221,7 @@ function defaultRowCallback(row){ //rowCallback
 	});
 	$(".ui-dialog-content").dialog("close");
 }
-
+*/
 function defaultSearch(tableConfig, SDRId){  
 	var params = buildParams(tableConfig);
 	performSDR(tableConfig, SDRId, params);
@@ -183,6 +237,102 @@ function buildParams(tableConfig){
 		}
 	});
 	return tableConfig.fullParams;
+}
+
+function performBridgeRequest(tableConfig){
+	//create the connector necessary to connect to the bridge
+	var connector = new KD.bridges.BridgeConnector();
+	//CONFIGURE: Id of table (div) to recieve Bridge results.  The table element must exist before this code executes.
+	var tableId = peopleTables.requestedForTableConfig.tableId;
+	//CONFIGURE: Define Bridge and Model/qualification to use
+	connector.search('Person', 'By First or Last Name', {
+		//CONFIGURE: Bridge Parameters
+		parameters: {'Last Name': $('#name_search input').val(),'First Name': $('#name_search input').val()},
+		//CONFIGURE: Bridge Attributes to be returned
+		attributes: ["First Name","Last Name","Email","Login Id","Work Phone Number"],
+		//CONFIGURE: Function to process results after search
+		success: function(response) {
+			tableConfig.dataArray = [];
+			//Retrieve Records
+			tableConfig.records=response.records;
+			if(tableConfig.records.length > 0 && tableConfig.records != null){	
+			//Itterate through row results to retrieve data
+			$.each(tableConfig.records, function(i,record){
+				var obj = {};
+				//Itterate through the configured columns to match with data returned from bridge
+				$.each(tableConfig.columns, function( j, v ){
+					var objKey = v["data"];
+					if (typeof record.attributes[objKey] != "undefined"){
+						var objVal = record.attributes[objKey];
+					}
+					else{
+						var objVal = '';
+					}
+					obj[objKey] = objVal;
+				});
+				tableConfig.dataArray.push(obj);
+			});
+				
+			if(!$.fn.DataTable.fnIsDataTable($('#'+tableConfig.tableId)[0])){
+				alert('DataTable not initialized');
+			}
+			else{
+				tableConfig.tableObj.clear().rows.add(tableConfig.dataArray).draw();
+				tableConfig.loadedcallback();
+				tableConfig.appendTo.show();
+				
+			}
+			tableConfig.done();
+		}
+		else{
+			tableConfig.noResults();
+		}
+			},
+		}
+	);      
+}
+function performBridgeRequestList(tableConfig){
+	//Retrieve and set the Bridge parameter values using JQuery
+	var parameters = {};
+	$.each(tableConfig.bridgeConfig.parameters, function(i,v){
+		parameters[i]=$(tableConfig.bridgeConfig.parameters[i]).val();
+	});
+	//create the connector necessary to connect to the bridge
+	var connector = new KD.bridges.BridgeConnector();
+	connector.search(tableConfig.bridgeConfig.model, tableConfig.bridgeConfig.qualification_mapping, {
+		parameters: parameters,
+		attributes: tableConfig.bridgeConfig.attributes,
+		success: function(response) {
+				this.$resultsList = $("<ul id='resultList'>");
+				var self = this; // reference to this in current scope
+				//Retrieve Records
+				tableConfig.records=response.records;
+				if(tableConfig.records.length > 0 && tableConfig.records != null){	
+				//Itterate through row results to retrieve data
+				$.each(tableConfig.records, function(i,record){
+					self.$singleResult = $("<li id='result'>");
+					//Iterate through the configured columns to match with data returned from bridge
+					$.each(tableConfig.columns, function( j, v ){
+						var objKey = v["data"];
+						if (typeof record.attributes[objKey] != "undefined"){
+							self.$singleResult.append("<div>"+record.attributes[objKey]+"</div>");
+						}
+						else{
+							self.$singleResult.append("<div></div>");
+						}
+					});
+					self.$resultsList.append(self.$singleResult);
+				});
+					
+				//$('#name_search input').append(self.$resultsDiv);
+				$('#results').empty().append(self.$resultsList);
+				
+				//$('body').append(self.$resultsDiv);
+				tableConfig.done(self.$resultsDiv);
+			}
+			},
+		}
+	);      
 }
 function performSDR(tableConfig, SDRId, params){
 	//	Define a callback that will call the custom populateUserTable function on success, or alert on failure. 
