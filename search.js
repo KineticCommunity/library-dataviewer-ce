@@ -291,7 +291,7 @@
 		KD.utils.Action.makeAsyncRequest('Get Users', SDRId, connection, params, '', false);
 	}
 
-	function ucFirst(str) {
+	search.ucFirst = function(str){
 		var firstLetter = str.substr(0, 1);
 		return firstLetter.toUpperCase() + str.substr(1);
 	} 
