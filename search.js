@@ -255,6 +255,9 @@
 					this.$resultsList.data('name',name);
 					configObj.appendTo.empty().append(this.$resultsList).show("blind", "swing", 1000);		
 					}	
+					else{
+						configObj.noResults();
+					}
 					configObj.loadedcallback();
 				},
 			}); 
