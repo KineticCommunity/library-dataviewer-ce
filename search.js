@@ -247,6 +247,9 @@
 						});
 						self.$resultsList.append(self.$singleResult);
 					});
+					//Add odd and even classes to results
+					this.$resultsList.find('li:even').addClass("even")
+					this.$resultsList.find('li:odd').addClass("odd")
 					//Set the Data Attribute to the name of the seachConfig Obj
 					var name = filtersearchConfigByName(configObj);	
 					this.$resultsList.data('name',name);
