@@ -1,5 +1,5 @@
 (function($) {
-	// Ensure the KINETIC global object exists
+    // Ensure the KINETIC global object exists
     KD = KD || {};
     // Create the utils namespace
     KD.utils = KD.utils || {};
@@ -45,7 +45,7 @@
 	
 	search.searchConfig = {};
 	search.initialize = function(o){
-		search.searchConfig = o;
+		search.searchConfig = $.extend( {}, o, search.searchConfig );
 		//Initialize the configurations
 		$.each(search.searchConfig, function(i, config){
 			if(config.type=="BridgeDataTable"){
