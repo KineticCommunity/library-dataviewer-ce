@@ -109,7 +109,7 @@
 		//Retrieve and set the Bridge parameter values using JQuery
 		var parameters = {};
 		$.each(configObj.bridgeConfig.parameters, function(i,v){
-			parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
+			parameters[i] = encodeURIComponent($(configObj.bridgeConfig.parameters[i]).val());
 		});
 		var templateId = (configObj.bridgeConfig.templateId) ? configObj.bridgeConfig.templateId : clientManager.templateId;
 		//create the connector necessary to connect to the bridge
