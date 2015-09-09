@@ -1,5 +1,5 @@
 (function($) {
-    // Ensure the KINETIC global object exists
+	// Ensure the KINETIC global object exists
     KD = KD || {};
     // Create the utils namespace
     KD.utils = KD.utils || {};
@@ -36,6 +36,17 @@
 		execute: performBridgeRequestSingle,
 	};
 	
+	var defaultSDRTable = {
+		execute: performSDRTable,
+		 "destroy": true,
+		responsive: {
+			details: {
+				type: 'column',
+				target: '.control, .control-additional'
+			}
+		},
+	};
+	
 	search.executeSearch = function(name) {
 		var configObj = search.searchConfig[name];
 			if(configObj && configObj.execute){
@@ -45,7 +56,7 @@
 	
 	search.searchConfig = {};
 	search.initialize = function(o){
-		search.searchConfig = $.extend( {}, o, search.searchConfig );
+		search.searchConfig = o;
 		//Initialize the configurations
 		$.each(search.searchConfig, function(i, config){
 			if(config.type=="BridgeDataTable"){
@@ -66,6 +77,14 @@
 			else if(config.type=="BridgeGetSingle"){
 				//Entend defaults into the configuration
 				search.searchConfig[i]=$.extend( {}, defaultsBridgeGetSingle, config );
+			} 
+			else if(config.type=="performSDRTable"){
+				//Entend defaults into the configuration
+				search.searchConfig[i]=$.extend( {}, defaultSDRTable, config );
+				$table =($('<table>', {'cellspacing':'0', 'border':'0', 'class': 'display'})).attr('id',config.tableId);
+				search.searchConfig[i].appendTo.append($table);
+				search.searchConfig[i].afterInit();
+				search.searchConfig[i].clickCallback();
 			}
 			//Execute Search immediately
 			if(config.runAtInitialization){
@@ -109,11 +128,11 @@
 		//Retrieve and set the Bridge parameter values using JQuery
 		var parameters = {};
 		$.each(configObj.bridgeConfig.parameters, function(i,v){
-			parameters[i] = encodeURIComponent($(configObj.bridgeConfig.parameters[i]).val());
+			parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
 		});
-		var templateId = (configObj.bridgeConfig.templateId) ? configObj.bridgeConfig.templateId : clientManager.templateId;
 		//create the connector necessary to connect to the bridge
-		var connector = new KD.bridges.BridgeConnector({templateId: templateId});		//CONFIGURE: Id of table (div) to recieve Bridge results.  The table element must exist before this code executes.
+		var connector = new KD.bridges.BridgeConnector();
+		//CONFIGURE: Id of table (div) to recieve Bridge results.  The table element must exist before this code executes.
 		var tableId = this.tableId;
 			connector.search(configObj.bridgeConfig.model, configObj.bridgeConfig.qualification_mapping, {
 				parameters: parameters,
@@ -131,7 +150,11 @@
 							$.each(configObj.columns, function( j, v ){
 								var objKey = v["data"];
 								if (typeof record.attributes[objKey] != "undefined"){
-									var objVal = record.attributes[objKey];
+									if (v["date"] == true && typeof v["moment"] != "undefined") {
+										var objVal = moment(record.attributes[objKey]).format(v["moment"]);
+									} else {
+										var objVal = record.attributes[objKey];
+									}
 								}
 								else{
 									var objVal = '';
@@ -170,9 +193,8 @@
 		$.each(configObj.bridgeConfig.parameters, function(i,v){
 			parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
 		});
-		var templateId = (configObj.bridgeConfig.templateId) ? configObj.bridgeConfig.templateId : clientManager.templateId;
 		//create the connector necessary to connect to the bridge
-		var connector = new KD.bridges.BridgeConnector({templateId: templateId});
+		var connector = new KD.bridges.BridgeConnector();
 		//CONFIGURE: Id of table (div) to recieve Bridge results.  The table element must exist before this code executes.
 		var tableId = this.tableId;
 			connector.retrieve(configObj.bridgeConfig.model, configObj.bridgeConfig.qualification_mapping, {
@@ -213,8 +235,7 @@
 			parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
 		});
 		//create the connector necessary to connect to the bridge
-		var templateId = (configObj.bridgeConfig.templateId) ? configObj.bridgeConfig.templateId : clientManager.templateId;
-		var connector = new KD.bridges.BridgeConnector({templateId: templateId});
+		var connector = new KD.bridges.BridgeConnector();
 		connector.search(configObj.bridgeConfig.model, configObj.bridgeConfig.qualification_mapping, {
 			parameters: parameters,
 			attributes: configObj.bridgeConfig.attributes,
@@ -247,23 +268,22 @@
 						});
 						self.$resultsList.append(self.$singleResult);
 					});
-					//Add odd and even classes to results
-					this.$resultsList.find('li:even').addClass("even")
-					this.$resultsList.find('li:odd').addClass("odd")
 					//Set the Data Attribute to the name of the seachConfig Obj
 					var name = filtersearchConfigByName(configObj);	
 					this.$resultsList.data('name',name);
 					configObj.appendTo.empty().append(this.$resultsList).show("blind", "swing", 1000);		
 					}	
-					else{
-						configObj.noResults();
-					}
 					configObj.loadedcallback();
 				},
 			}); 
 		configObj.done(self.$resultsDiv);
 	}
-	function performSDR(configObj, SDRId, params){
+	function performSDRTable(){
+		var configObj = this;
+		var SDRId = configObj.sdrConfig.SDRId;
+		var params = configObj.sdrConfig.params;
+		var sdrName = configObj.sdrConfig.sdrName;
+		
 		//	Define a callback that will call the custom populateUserTable function on success, or alert on failure. 
 		var connection=new KD.utils.Callback(function(response){
 			configObj.dataArray = [];
@@ -275,20 +295,37 @@
 					var obj = {};
 					$.each(configObj.columns, function( j, v ){
 						var objKey = v["data"];
-						var objVal = $(record).find("[id='"+objKey+"']").text() ;
+						if (typeof KD.utils.Action.getRequestValue(record, objKey) != "undefined"){
+							if (v["date"] == true && typeof v["moment"] != "undefined") {
+								var objVal = moment(KD.utils.Action.getRequestValue(record, objKey)).format(v["moment"]);
+							} else {
+								var objVal = KD.utils.Action.getRequestValue(record, objKey);
+							}
+						}
+						else{
+							var objVal = '';
+						}
 						obj[objKey] = objVal;
 					});
 					configObj.dataArray.push(obj);
 				});
 					
 				if(!$.fn.DataTable.fnIsDataTable($('#'+configObj.tableId)[0])){
-					alert('DataTable not initialized');
+					configObj.tableObj = $('#'+configObj.tableId).DataTable( configObj );
+					configObj.tableObj.rows.add(configObj.dataArray).draw();
 				}
 				else{
-					configObj.tableObj.clear().rows.add(configObj.dataArray).draw();
-					
+				    if (configObj.tableObj) {
+						configObj.tableObj.clear().rows.add(configObj.dataArray).draw();
+					}
+					else {
+						configObj.tableObj = $('#'+configObj.tableId).DataTable( configObj );
+						configObj.tableObj.clear().rows.add(configObj.dataArray).draw();
+					}
 				}
-				configObj.done();
+				var name = filtersearchConfigByName(configObj);
+				$('#'+configObj.tableId).data('name',name);
+				configObj.loadedcallback();
 			}
 			else{
 				configObj.noResults();
@@ -296,7 +333,8 @@
 		},alert); 
 		
 		//	Make an Asynchronous SDR request. */
-		KD.utils.Action.makeAsyncRequest('Get Users', SDRId, connection, params, '', false);
+		KD.utils.Action.makeAsyncRequest(sdrName, SDRId, connection, params, '', false);
+		configObj.done();
 	}
 
 	search.ucFirst = function(str){
