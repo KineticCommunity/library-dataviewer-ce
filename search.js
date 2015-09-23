@@ -130,8 +130,9 @@
 		$.each(configObj.bridgeConfig.parameters, function(i,v){
 			parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
 		});
+		var templateId = (configObj.bridgeConfig.templateId) ? configObj.bridgeConfig.templateId : clientManager.templateId;
 		//create the connector necessary to connect to the bridge
-		var connector = new KD.bridges.BridgeConnector();
+		var connector = new KD.bridges.BridgeConnector({templateId: templateId});
 		//CONFIGURE: Id of table (div) to recieve Bridge results.  The table element must exist before this code executes.
 		var tableId = this.tableId;
 			connector.search(configObj.bridgeConfig.model, configObj.bridgeConfig.qualification_mapping, {
@@ -193,8 +194,9 @@
 		$.each(configObj.bridgeConfig.parameters, function(i,v){
 			parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
 		});
+		var templateId = (configObj.bridgeConfig.templateId) ? configObj.bridgeConfig.templateId : clientManager.templateId;
 		//create the connector necessary to connect to the bridge
-		var connector = new KD.bridges.BridgeConnector();
+		var connector = new KD.bridges.BridgeConnector({templateId: templateId});
 		//CONFIGURE: Id of table (div) to recieve Bridge results.  The table element must exist before this code executes.
 		var tableId = this.tableId;
 			connector.retrieve(configObj.bridgeConfig.model, configObj.bridgeConfig.qualification_mapping, {
@@ -239,8 +241,9 @@
 		$.each(configObj.bridgeConfig.parameters, function(i,v){
 			parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
 		});
+		var templateId = (configObj.bridgeConfig.templateId) ? configObj.bridgeConfig.templateId : clientManager.templateId;
 		//create the connector necessary to connect to the bridge
-		var connector = new KD.bridges.BridgeConnector();
+		var connector = new KD.bridges.BridgeConnector({templateId: templateId});
 		connector.search(configObj.bridgeConfig.model, configObj.bridgeConfig.qualification_mapping, {
 			parameters: parameters,
 			attributes: configObj.bridgeConfig.attributes,
