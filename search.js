@@ -203,23 +203,28 @@
 				attributes: configObj.bridgeConfig.attributes,
 				//TODO: Move Success into object configuration????  Does it make sense?
 				success: function(response) {
-					configObj.dataArray = [];
-					var obj = {};
-					//Iterate through the configured columns to match with data returned from bridge
-					$.each(configObj.columns, function( j, v ){
-						var objKey = v["data"];
-						if (typeof response.attributes[objKey] != "undefined"){
-							var objVal = response.attributes[objKey];
-							KD.utils.Action.setQuestionValue(v["setQstn"],objVal);
-
-						}
-						else{
-							var objVal = '';
-						}
-						obj[objKey] = objVal;
-					});
-					configObj.dataArray.push(obj);
-					configObj.loadedcallback();		
+					if(response.attributes != null){
+						configObj.dataArray = [];
+						var obj = {};
+						//Iterate through the configured columns to match with data returned from bridge
+						$.each(configObj.columns, function( j, v ){
+							var objKey = v["data"];
+							if (typeof response.attributes[objKey] != "undefined"){
+								var objVal = response.attributes[objKey];
+								KD.utils.Action.setQuestionValue(v["setQstn"],objVal);
+	
+							}
+							else{
+								var objVal = '';
+							}
+							obj[objKey] = objVal;
+						});
+						configObj.dataArray.push(obj);
+						configObj.loadedcallback();
+					}
+					else{
+						configObj.noResults();
+					}	
 				},
 			});
 	configObj.done();
