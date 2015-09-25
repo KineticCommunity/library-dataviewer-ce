@@ -19,4 +19,4 @@ Javascript library used to preform a search functions using a configured bridge
   
 # How to use
 
-First add an event on load for the page that the search will be used on.  Additional load event will have to be included to expose the bridge for each qualifiction that will be used.  Custom code to include a search field and a handle to activate the search will be required.  Configure the searchConfig.js file to work with the bridge and questions on the form.
+First add an event on load for the page that the search will be used on and call the **loadSearch()**; function.  Additional load events will have to be included to expose the bridge for each qualifiction that will be used.  Custom code to include a search field input and a handle to activate the search will be required.  Configure the searchConfig.js file to work with the bridge and questions on the form.
