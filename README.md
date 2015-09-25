@@ -11,11 +11,11 @@ Javascript library used to preform a search functions using a configured bridge
 5. Import JS file at the bottom of head.jspf under the <!--Common JavaScript-->
   * &lt;script type="text/javascript" src="<%=bundle.bundlePath()%>libraries/kinetic-search/js/search.js"&gt;&lt;/script&gt;
 6. Import datatables JS files at the bottom of head.jspf under the <!--Common JavaScript Libraries-->
-  * &lt;script type="text/javascript" charset="utf8" src="/kinetic/themes/brighthouse/libraries/datatables-1.10.7/media/js/jquery.dataTables.min.js"&gt;&lt;/script&gt;
-  * &lt;script type="text/javascript" charset="utf8" src="/kinetic/themes/brighthouse/libraries/datatables-responsive-plugin/dataTables.responsive.js"&gt;&lt;/script&gt;
+  * &lt;script type="text/javascript" charset="utf8" src="<%=bundle.bundlePath()%>libraries/datatables-1.10.7/media/js/jquery.dataTables.min.js"&gt;&lt;/script&gt;
+  * &lt;script type="text/javascript" charset="utf8" src="<%=bundle.bundlePath()%>libraries/datatables-responsive-plugin/dataTables.responsive.js"&gt;&lt;/script&gt;
 7. Import datatables CSS files at the top of the head.jspf under the <!-- Common Stylesheets Libraries -->
-  * &lt;link rel="stylesheet" type="text/css" href="/kinetic/themes/brighthouse/libraries/datatables-1.10.7/media/css/jquery.dataTables.min.css"&gt; 
-  * &lt;link rel="stylesheet" type="text/css" href="/kinetic/themes/brighthouse/libraries/datatables-responsive-plugin/dataTables.responsive.custom.css"&gt;
+  * &lt;link rel="stylesheet" type="text/css" href="<%=bundle.bundlePath()%>libraries/datatables-1.10.7/media/css/jquery.dataTables.min.css"&gt; 
+  * &lt;link rel="stylesheet" type="text/css" href="<%=bundle.bundlePath()%>libraries/datatables-responsive-plugin/dataTables.responsive.custom.css"&gt;
   
 # How to use
 
