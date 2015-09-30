@@ -51,6 +51,7 @@
 		var configObj = search.searchConfig[name];
 			if(configObj && configObj.execute){
 				configObj.execute();
+				event.preventDefault ? event.preventDefault() : event.returnValue = false;
 			}
 	};
 	
@@ -388,7 +389,7 @@
 				$(window).scrollTop(0);
 				// Create one reset display event on content slide
 				contentSlide.one('click', function(event) {
-					event.preventDefault();
+					event.preventDefault ? event.preventDefault() : event.returnValue = false;
 					event.stopImmediatePropagation();
 					firstToggleClick = true;
 					BUNDLE.common.resetDisplay(this, configObj.appendTo, previousScrollTop); 
