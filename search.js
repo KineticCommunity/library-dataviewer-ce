@@ -51,7 +51,6 @@
 		var configObj = search.searchConfig[name];
 			if(configObj && configObj.execute){
 				configObj.execute();
-				event.preventDefault ? event.preventDefault() : event.returnValue = false;
 			}
 	};
 	
