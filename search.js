@@ -8,6 +8,11 @@
     // Create a scoped alias to simplify references
     var search = KD.search;
 
+	//Code in kd_client.js is preventing the backspace from working on $('.dataTables_filter input'). stopPropigation allows backspace to work.  
+	$('body').on('keydown', '.dataTables_filter input', function( event ) {
+	  event.stopPropagation();
+	});
+	
 	//Define defaults for the Table config.  Reduces need to include all properties.  Each table config my overide these values by 
 	//including a value of its own.
 	//TODO:  Should these defaults be converted to and Array of objects also?
