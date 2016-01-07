@@ -9,27 +9,30 @@
     var search = KD.search;
    
     /**
-     * Define default properties for the Table configurations
+     * Define default properties for the Search configurations
      * Reduces need to include all properties in a search configuration.  
-     * Each table config my overide these values by including a value of its own.
+     * Each Search config my overide these values by including a value of its own.
      * execute: {Function} Function which will execute the search
      * Other properties are used by Datatables.net or its Responsive Plugin.
      */
     /* Define default properties for defaultsBridgeDataTable object. */
     var defaultsBridgeDataTable = {
         execute: performBridgeRequestDataTable,
-        paging: true,
+		resultsElement : '<table cellspacing="0", border="0", class="display">',
+        bridgeConfig:{
+			templateId: BUNDLE.config.commonTemplateId
+		},
+		// Properties specific to DataTables
+		paging: true,
         info: true,
         searching: true,
         responsive: true,
-		bridgeConfig:{
-			templateId: BUNDLE.config.commonTemplateId
-		},
     };
     
     /* Define default properties for defaultsBridgeList object. */
     var defaultsBridgeList = {
-        execute: performBridgeRequestList
+        execute: performBridgeRequestList,
+		resultsElement : '<div id="results">',
     };
     
     /* Define default properties for defaultsBridgeGetSingle object. */
@@ -43,8 +46,9 @@
     /* Define default properties for defaultSDRTable object. */
     var defaultSDRTable = {
         execute: performSDRTable,
-         "destroy": true,
-        responsive: {
+		resultsElement : '<table cellspacing="0", border="0", class="display">',
+		// Properties specific to DataTables
+		responsive: {
             details: {
                 type: 'column',
                 target: '.control, .control-additional'
@@ -56,48 +60,32 @@
      * Initialize the searchConfig Object 
      * @param {Object} Configuration object(s)
      */
-    search.initialize = function(o){
-        search.searchConfig = o;
+    search.initialize = function(obj){
         // Initialize each the configurations based on the type property 
-        $.each(search.searchConfig, function(i, config){
-            if(config.type=="BridgeDataTable"){
+            if(obj.type=="BridgeDataTable"){
                 // Entend defaults into the configuration
-                search.searchConfig[i]=$.extend( {}, defaultsBridgeDataTable, config );
-                // Create a table element for Datatables
-                $table =($('<table>', {'cellspacing':'0', 'border':'0', 'class': 'display'})).attr('id',config.tableId);
-                // Apppend the table element to DOM in the configured location.
-                search.searchConfig[i].appendTo.append($table);
-
+                obj=$.extend( {}, defaultsBridgeDataTable, obj );
+                obj=$.extend( {}, defaultSDRTable, obj );
+                // Create a table element for Datatables and add to DOM
+				obj=initResultsElement(obj);  
             }
-            else if(config.type=="BridgeList"){
+            else if(obj.type=="BridgeList"){
                 // Entend defaults into the configuration
-                search.searchConfig[i]=$.extend( {}, defaultsBridgeList, config );
-                // Apppend the results element to DOM in the configured location.
-                search.searchConfig[i].appendTo.append("<div id='results'>").hide();
-                // Add the configured afterInit function
-                search.searchConfig[i].afterInit();
+                obj=$.extend( {}, defaultsBridgeList, obj );
+                // Create a results element for Datatables and add to DOM
+				obj=initResultsElement(obj); 
             }
-            else if(config.type=="BridgeGetSingle"){
+            else if(obj.type=="BridgeGetSingle"){
                 // Entend defaults into the configuration
-                search.searchConfig[i]=$.extend( {}, defaultsBridgeGetSingle, config );
+                obj=$.extend( {}, defaultsBridgeGetSingle, obj );
             } 
-            else if(config.type=="performSDRTable"){
+            else if(obj.type=="performSDRTable"){
                 // Entend defaults into the configuration
-                search.searchConfig[i]=$.extend( {}, defaultSDRTable, config );
-                // Create a table element for Datatables
-                $table =($('<table>', {'cellspacing':'0', 'border':'0', 'class': 'display'})).attr('id',config.tableId);
-                // Apppend the table element to DOM in the configured location.
-                search.searchConfig[i].appendTo.append($table);
-                // Add the configured afterInit function
-                search.searchConfig[i].afterInit();
-
+                obj=$.extend( {}, defaultSDRTable, obj );
+                // Create a table element for Datatables and add to DOM
+				obj=initResultsElement(obj);  
             }
-            // If the property runAtInitialization is true, execute search immediately
-            // Useful for applying default values
-            if(config.runAtInitialization){
-                search.executeSearch(filtersearchConfigByName(search.searchConfig[i]));
-            }
-        });
+			return obj
     }
     
     /**
@@ -107,8 +95,9 @@
      */
     //TODO: modify to accept obj as first param
 	search.executeSearch = function(name, config) {
-		if(search.searchConfig[name] && search.searchConfig[name].execute){
-			var configObj=$.extend( true, {}, search.searchConfig[name], config );
+		name = search.initialize(name);
+		if(name.execute){
+			var configObj=$.extend( true, {}, name, config );
 			configObj.execute();
 		}	
     };
@@ -149,7 +138,7 @@
         var templateId = (configObj.bridgeConfig.templateId && configObj.bridgeConfig.templateId!="null") ? configObj.bridgeConfig.templateId : clientManager.templateId;
         //create the connector necessary to connect to the bridge
         var connector = new KD.bridges.BridgeConnector({templateId: templateId});
-		// Add the configured afterInit function
+		// Run the configured afterInit function
         if(configObj.afterInit){configObj.afterInit();}
 		connector.search(configObj.bridgeConfig.model, configObj.bridgeConfig.qualification_mapping, {
 			parameters: parameters,
@@ -220,7 +209,12 @@
         //Retrieve and set the Bridge parameter values using JQuery
         var parameters = {};
         $.each(configObj.bridgeConfig.parameters, function(i,v){
-            parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
+            if(typeof v == "function"){
+				parameters[i] = v();
+			}
+			if(typeof v == "string"){
+				parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
+			}
         });
 		// Retrieve Bridge Search Attributes from Search Object
 		if(typeof configObj.bridgeConfig.attributes == "undefined"){
@@ -236,7 +230,7 @@
         //CONFIGURE: Id of table (div) to recieve Bridge results.  The table element must exist before this code executes.
 		connector.retrieve(configObj.bridgeConfig.model, configObj.bridgeConfig.qualification_mapping, {
 			//parameters: parameters,
-			parameters: configObj.bridgeConfig.parameters,
+			parameters: parameters,
 			metadata: configObj.bridgeConfig.metadata,
 			//attributes: configObj.bridgeConfig.attributes,
 			attributes: configObj.bridgeConfig.attributes,
@@ -299,7 +293,9 @@
         var templateId = (configObj.bridgeConfig.templateId && configObj.bridgeConfig.templateId!="null") ? configObj.bridgeConfig.templateId : clientManager.templateId;
         //create the connector necessary to connect to the bridge
         var connector = new KD.bridges.BridgeConnector({templateId: templateId});
-        connector.search(configObj.bridgeConfig.model, configObj.bridgeConfig.qualification_mapping, {
+        // Run the configured afterInit function
+        if(configObj.afterInit){configObj.afterInit();}
+		connector.search(configObj.bridgeConfig.model, configObj.bridgeConfig.qualification_mapping, {
             parameters: parameters,
             attributes: configObj.bridgeConfig.attributes,
             success: function(response) {
@@ -335,8 +331,9 @@
 							self.$resultsList.append(self.$singleResult);
                         });
 						//Set the Data Attribute to the name of the seachConfig Obj
-						var name = filtersearchConfigByName(configObj);    
-						this.$resultsList.data('name',name);
+// Removed as part of changed to search initialization
+//						var name = filtersearchConfigByName(configObj);    
+//						this.$resultsList.data('name',name);
 						configObj.appendTo.empty().append(this.$resultsList);
 						configObj.appendTo.on( "click", 'li', function(event){
 							setValuesFromResults(configObj.data, $(this).data());
@@ -368,6 +365,8 @@
 		else if(typeof configObj.sdrConfig.params == "string"){
 			var params = configObj.sdrConfig.params;
 		}
+		// Run the configured afterInit function
+        if(configObj.afterInit){configObj.afterInit();}
         //    Define a callback that will call the custom populateUserTable function on success, or alert on failure. 
         var connection=new KD.utils.Callback(function(response){
             configObj.dataArray = [];
@@ -398,7 +397,7 @@
 				createDataTable(configObj);
             }
             // Only one record returned
-			else if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && configObj.records.length > 0 && configObj.records != null){
+			else if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && configObj.records.length == 1 && configObj.records != null){
 				// TODO: can this code be placed into a function and also used with performBridgeRequestSingle.  Note: response is different
 				// in each scenario and will need to be accounted for in the code.
 				var resultsObj = {};
@@ -448,9 +447,36 @@
     });
     
     /**
-     * Returns name of searchConfig Object
+     * Returns Search Object
+	 * Creates resultsElement and adds it to DOM based on Search Config
+     * @param {Object} Search Object
+     */	
+	function initResultsElement(obj){
+		// Create resultsElement
+		if(typeof obj.resultsElement == "string"){ // if string
+			obj.resultsElement = $(obj.resultsElement).attr('id',obj.tableId);
+		}
+		else if(typeof obj.resultsElement == "function"){ // if function
+			obj.resultsElement = obj.resultsElement().attr('id',obj.tableId);
+		}
+		// Append to DOM
+		if(obj.appendTo instanceof $){ // if jQuery Obj
+			obj.appendTo.append(obj.resultsElement);
+		}
+		else if(typeof obj.appendTo == "string"){ // if string
+			obj.appendTo = $(obj.appendTo).append(obj.resultsElement);
+		}
+		else if(typeof obj.appendTo == "function"){ // if function
+			obj.appendTo = obj.appendTo().append(obj.resultsElement);
+		}
+		return obj;
+	}
+	
+    /**
+     * Returns name of search Object
      * @param {Object} Search Object to parsed for name
      */
+//ToDo: Is this still used?
     function filtersearchConfigByName(obj) {
         var configName;
         $.each(search.searchConfig, function(i, config){
@@ -462,23 +488,25 @@
         return configName;
     }
 	/**
-     * Returns name of searchConfig Object
-     * @param {Object} Search Object to parsed for name
+     * Returns object containing data from row
+     * @param {Object} table
+	 * @param {Object} row 
      */
 	function dataTableRowToObj(table, row){
 		var selectedRow = $(row).closest('tr');		
 		return table.row(selectedRow).data();
 	}
 
+//NO LONGER USED?
 	/**
-     * Returns name of searchConfig Object
+     * Returns object containing data from li
      * @param {Object} Search Object to parsed for name
      */
-	function listToObj(li){
+	/*function listToObj(li){
         var list = $(li).closest('ul').data('name');
 		selectionData = $(list).data()
         return selectionData;
-	}
+	}*/
 
 	/**
 	* Convert the "data" property into "columns", necessary for DataTables.
@@ -500,8 +528,9 @@
 		configObj.tableObj = $('#'+configObj.tableId).DataTable( configObj );
 		configObj.tableObj.rows.add(configObj.dataArray).draw();
 		//Set the name data attribute to the name of the search.searchConfig Obj
-		var name = filtersearchConfigByName(configObj);
-		$('#'+configObj.tableId).data('name',name);
+// Commented out after changing how initalization was performed
+//		var name = filtersearchConfigByName(configObj);
+//		$('#'+configObj.tableId).data('name',name);
 		if(configObj.loadedcallback){configObj.loadedcallback();}
 		// Bind Click Event based on where the select attribute extists ie:<tr> or <td>
 		$('#'+configObj.tableId).off().on( "click", '.select', function(event){
