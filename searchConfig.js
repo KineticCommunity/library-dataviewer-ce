@@ -39,20 +39,6 @@ $(document).on('click', '.search-container:not(.unclickable) .search-btn:not(.ac
 	KD.search.executeSearch(searchConfigObj);
 });
 
-test = {
-data: {
-	"First Name":{
-		setQstn:"Contact_First Name",
-		title:"WHO",
-	},
-	"Work Phone Number":{
-		title:"PHONE",
-		className: "min-tablet control-additional",
-		setQstn:"ReqFor_Phone"
-	}
-},
-}
-
 //Bind events to toggle active class to disable elements while search is performing.
 //Also clears out values when a either myself or someone else is clicked
 //Only buttons which do not have the active or unclickable class applied.
@@ -124,8 +110,10 @@ togglePanel = function(configObj){
 // Define Table objects or list Object and initialize them.
 searchConfig ={
 	requestedForTableConfig:{
-		//type: "BridgeDataTable" or "BridgeList".  Determines default values to be used and behavior.
+		// type: "BridgeDataTable" or "BridgeList".  Determines default values to be used and behavior.
 		type: "BridgeDataTable",
+		// responsive: OPTIONAL Default for "BridgeDataTable" is true but can be over written.
+		//responsive: false,
 		bridgeConfig:{
 			model: "Person",
 			qualification_mapping: "By First Name or Last Name or Full Name",
@@ -137,12 +125,12 @@ searchConfig ={
 		data: {
 			"First Name":{
 				title:"FIRST",
-				className: "control",
+				className: "all",
 				setQstn:"ReqFor_First Name",
 			},
 			"Last Name":{
 				title:"Last",
-				className: "min-phone-l control-additional",
+				className: "min-tablet",
 				callback:function(value){
 					console.log(value);
 				},
@@ -150,19 +138,19 @@ searchConfig ={
 			},
 			"Email":{
 				title:"EMAIL",
-				className: "min-tablet control-additional",
+				className: "min-phone",
 				setQstn:"ReqFor_Email"
 			},
 			"Login Id":{
-				title:"EMAIL",
+				title:"LOGIN",
 				className: "none",
 				setQstn:"ReqFor_Login ID"
 			},
-			/*"Work Phone Number":{
+			"Work Phone Number":{
 				title:"PHONE",
-				className: "none",
+				className: "hidden",
 				setQstn:"ReqFor_Phone"
-			}*/
+			}
 		},
 		//Where to append the table
 		// appendTo: $('div.search-slide'), // Not recommended to use jQuery object as it may not exist when evaluated.
@@ -175,8 +163,6 @@ searchConfig ={
 		tableId: 'requestedForTable',
 		//After the Table has been created.
 		afterInit: function(){ //completeCallback
-			//Add select column to the table
-			this.columns.unshift({ data: 'select', "title":"SELECT",	"defaultContent": "", orderable: false, width: 60,			className: "select" })
 		},
 		before: function(){ //before search
 			toggleUnclickable($('#requested_for'));
@@ -199,8 +185,6 @@ searchConfig ={
 			togglePanel(this);
 		},
 		createdRow: function ( row, data, index ) {
-			// Add select class to Row.  The class is used to trigger selection of row.
-			$(row).addClass('select');
 		},
 		fnFooterCallback: function ( nRow, aaData, iStart, iEnd, aiDisplay ) {
 			console.log(aaData);
@@ -209,6 +193,8 @@ searchConfig ={
 	},
 	contactTableConfig:{
 		type: "BridgeDataTable",
+		// responsive: OPTIONAL Default for "BridgeDataTable" is true but can be over written.
+		//responsive: false,
 		bridgeConfig:{
 			model: "Person",
 			qualification_mapping: "By First Name or Last Name or Full Name",
@@ -218,37 +204,36 @@ searchConfig ={
 		data: {
 			"First Name":{
 				title:"FIRST",
-				className: "control",
+				className: "",
 				setQstn:"Contact_First Name",
 			},
 			"Last Name":{
 				title:"Last",
-				className: "min-phone-l control-additional",
+				className: "min-phone-l",
 				callback:function(value){
 					console.log(value);
 				},
 				setQstn:"Contact_Last Name"
 			},
 			"Email":{
-				"title":"EMAIL",
+				title:"EMAIL",
+				className: "min-phone-l",
 				setQstn:"Contact_Email",
-				className: "min-phone-l control-additional"
 			},
 			"Login Id":{
-				"title":"ID",
+				title:"ID",
+				className: "min-tablet",
 				setQstn:"Contact_Login ID",
-				className: "min-tablet control-additional"
 			},
 			"Work Phone Number":{
-				"title":"PHONE",
+				title:"PHONE",
+				className: "none",
 				setQstn:"Contact_Phone",
-				className: "min-tablet control-additional"
 			}
 		},
 		appendTo: $('div.search-slide'),
 		tableId: 'contactTable',
 		afterInit: function(){ //completeCallback
-			this.columns.unshift({ data: 'select', "title":"SELECT",	"defaultContent": "", orderable: false, width: 60,			className: "select" })
 		},
 		before: function(){ //before search
 			toggleUnclickable($('#contact'));
@@ -270,7 +255,7 @@ searchConfig ={
 		},
 		createdRow: function ( row, data, index ) {
 			// Add select class to Row.  The class is used to trigger selection of row.
-			$(row).addClass('select');
+			//$(row).addClass('select');
 		},
 	},
 	defaultRequestedFor:{
@@ -285,26 +270,19 @@ searchConfig ={
 		},
 		data: {
 			"First Name":{
-				title:"FIRST",
 				setQstn:"ReqFor_First Name",
 			},
 			"Last Name":{
-				title:"LAST",
 				setQstn:"ReqFor_Last Name",
 
 			},
 			"Email":{
-				title:"EMAIL",
 				setQstn:"ReqFor_Email",
-
 			},
 			"Login Id":{
-				title:"ID",
 				setQstn:"ReqFor_Login ID",
-
 			},
 			"Work Phone Number":{
-				title:"PHONE",
 				setQstn:"ReqFor_Phone",
 			}
 		},
@@ -329,35 +307,19 @@ searchConfig ={
 		},
 		data: {
 			"First Name":{
-				"title":"FIRST",
 				setQstn:"Contact_First Name",
-				callback:function(value){
-					console.log(value);
-				},
-				className: "control",
 			},
 			"Last Name":{
-				"title":"LAST",
 				setQstn:"Contact_Last Name",
-				callback:function(value){
-					console.log(value);
-				},
-				className: "min-phone-l control-additional"
 			},
 			"Email":{
-				"title":"EMAIL",
 				setQstn:"Contact_Email",
-				className: "min-phone-l control-additional"
 			},
 			"Login Id":{
-				"title":"ID",
 				setQstn:"Contact_Login ID",
-				className: "min-tablet control-additional"
 			},
 			"Work Phone Number":{
-				"title":"PHONE",
 				setQstn:"Contact_Phone",
-				className: "min-tablet control-additional"
 			}
 		},
 		before: function(){
@@ -385,18 +347,12 @@ searchConfig ={
 			"First Name":{
 				title:"FIRST",
 				setQstn:"List Contact First Name",
-				callback:function(value){
-					console.log(value);
-				},
-				className: "control",
+				className: "",
 			},
 			"Last Name":{
 				title:"LAST",
 				setQstn:"List Contact Last Name",
-				callback:function(value){
-					console.log(value);
-				},
-				className: "min-phone-l control-additional"
+				className: ""
 			},
 			"Email":{
 				title:"EMAIL",
@@ -404,28 +360,21 @@ searchConfig ={
 				callback:function(value){
 					console.log(value);
 				},
-				className: "min-phone-l control-additional"
+				className: ""
 			},
 			"Login Id":{
 				title:"LOGIN",
 				setQstn:"List Contact Login ID",
-				callback:function(value){
-					console.log(value);
-				},
-				className: "min-phone-l control-additional"
+				className: ""
 			},
 			"Work Phone Number":{
 				title:"PHONE",
 				setQstn:"List Contact Phone",
-				callback:function(value){
-					console.log(value);
-				},
-				className: "min-phone-l control-additional"
+				className: ""
 			},
 		},
 		appendTo: '#list-contact-results',
 		afterInit: function(){ //completeCallback
-			
 		},
 		before: function(){
 			toggleUnclickable($('#list-contact'));
@@ -450,25 +399,14 @@ searchConfig ={
 		bridgeConfig:{
 			model: "Person",
 			qualification_mapping: "By Login Id",
-			//parameters: {'Login ID': clientManager.userName},
 			parameters: {'Login ID': function(){return clientManager.userName;}},
 		},
 		data: {
 			"First Name":{
-				"title":"FIRST",
 				setQstn:"List Contact First Name",
-				callback:function(value){
-					console.log(value);
-				},
-				className: "control",
 			},
 			"Last Name":{
-				"title":"LAST",
 				setQstn:"List Contact Last Name",
-				callback:function(value){
-					console.log(value);
-				},
-				className: "min-phone-l control-additional"
 			}
 		},
 		before: function(){
@@ -500,17 +438,17 @@ searchConfig ={
 		data: {
 			"AR Login":{
 				title:"LOGIN ID",
-				className: "control",
+				className: "all",
 				setQstn:"SDR_ReqFor_Login ID"
 			},
 			"First Name":{
 				title:"FIRST",
-				className: "min-tablet control-additional",
+				className: "min-tablet",
 				setQstn:"SDR_ReqFor_First Name"
 			},
 			"Last Name":{
 				title:"LAST",
-				className: "min-tablet control-additional",
+				className: "min-tablet",
 				setQstn:"SDR_ReqFor_Last Name"
 			},
 			"Supervisor Name":{
@@ -525,9 +463,7 @@ searchConfig ={
 		//ID to give the table when creating it.
 		tableId: 'SDRRequestedForTable',
 		//After the Table has been created.
-		afterInit: function(){ //completeCallback
-					this.columns.unshift({ data: 'select', "title":"SELECT",	"defaultContent": "", orderable: false, width: 60,			className: "select" })
-	
+		afterInit: function(){ //completeCallback	
 		},
 		before: function(){ //before search
 //			toggleUnclickable($('#requested_for'));

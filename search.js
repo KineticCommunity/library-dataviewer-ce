@@ -26,7 +26,11 @@
 		paging: true,
         info: true,
         searching: true,
-        responsive: true,
+		responsive: {
+            details: {
+                type: 'column',
+            }
+		},
     };
     
     /* Define default properties for defaultsBridgeList object. */
@@ -49,11 +53,10 @@
 		resultsElement : '<table cellspacing="0", border="0", class="display">',
 		// Properties specific to DataTables
 		responsive: {
-            details: {
-                type: 'column',
-                target: '.control, .control-additional'
-            }
-        },
+			details: {
+				type: 'column',
+			}
+		},
     };
 
     /**
@@ -112,7 +115,7 @@
 				KD.utils.Action.setQuestionValue(v["setQstn"],results[k]);
             }
 			// If callback property exists
-			if(v.callback){v.callback(results[v["data"]]);}
+			if(v.callback){v.callback(results[k]);}
         });
     }
 	
@@ -169,6 +172,14 @@
 						configObj.dataArray.push(obj);
 
 					});
+					// Append Column to beginning of table contain row expansion for responsive Plugin
+					if(configObj.responsive){
+						configObj.columns.unshift({
+							defaultContent: '',
+							className: 'control',
+							orderable: false,
+						});
+					}
 					// Create DataTable Object.
 					createDataTable(configObj);
 				}
@@ -393,6 +404,14 @@
                     });
                     configObj.dataArray.push(obj);
                 });
+				// Append Column to beginning of table contain row expansion for responsive Plugin
+				if(configObj.responsive){
+					configObj.columns.unshift({
+						defaultContent: '',
+						className: 'control',
+						orderable: false,
+					});
+				}
 				// Create DataTable Object.
 				createDataTable(configObj);
             }
@@ -533,13 +552,23 @@
 //		$('#'+configObj.tableId).data('name',name);
 		if(configObj.loadedcallback){configObj.loadedcallback();}
 		// Bind Click Event based on where the select attribute extists ie:<tr> or <td>
-		$('#'+configObj.tableId).off().on( "click", '.select', function(event){
-			var resultsObj = dataTableRowToObj(configObj.tableObj, this);
-			setValuesFromResults(configObj.data, resultsObj);
-			if(configObj.clickCallback){configObj.clickCallback(resultsObj);}
-			// Destroy DataTable and empty in case columns change.
-			configObj.tableObj.destroy();
-			$('#'+configObj.tableId).empty();
+		$('#'+configObj.tableId).off().on( "click", 'td', function(event){
+			// Ensure user has not clicked on an element with control class used by the responsive plugin to expand info
+			if(!$(this).hasClass('control')){
+				// Get closest row which is a parent row.
+				var row = $(this).closest('tr');
+				if(row.hasClass('child')){
+					row = row.prev('tr.parent')
+				}
+				// Convert selected row into a Results Obj 
+				var resultsObj = dataTableRowToObj(configObj.tableObj, row);
+				// Set results based on Search config
+				setValuesFromResults(configObj.data, resultsObj);
+				if(configObj.clickCallback){configObj.clickCallback(resultsObj);}
+				// Destroy DataTable and empty in case columns change.
+				configObj.tableObj.destroy();
+				$('#'+configObj.tableId).empty();
+			}
 		});
 	}
 })(jQuery);
