@@ -1,12 +1,16 @@
+/**
+KD-Search CE
+
+- Is there an equivilant to BUNDLE.config.commonTemplateId
+- How is the templateId (Slug) provided to the Bridge?
+- Check for namespace before creating namespace obj.
+
+**/
 (function($) {
-    // Ensure the KINETIC global object exists
-    KD = KD || {};
-    // Create the utils namespace
-    KD.utils = KD.utils || {};
-    // Create the service items namespace
-    KD.search = KD.search || {};
+    // Ensure the KDSearch global object exists
+    KDSearch = {};
     // Create a scoped alias to simplify references
-    var search = KD.search;
+    var search = KDSearch;
    
     /**
      * Define default properties for the Search configurations
@@ -20,7 +24,7 @@
         execute: performBridgeRequestDataTable,
 		resultsElement : '<table cellspacing="0", border="0", class="display">',
         bridgeConfig:{
-			templateId: BUNDLE.config.commonTemplateId
+//			templateId: BUNDLE.config.commonTemplateId
 		},
 		// Properties specific to DataTables
 		paging: true,
@@ -43,7 +47,7 @@
     var defaultsBridgeGetSingle = {
         execute: performBridgeRequestSingle,
 		bridgeConfig:{
-			templateId: BUNDLE.config.commonTemplateId
+//			templateId: BUNDLE.config.commonTemplateId
 		},
     };
     
@@ -111,8 +115,8 @@
      */
     function setValuesFromResults(configData, results){ //rowCallback
         $.each(configData, function( k, v){
-            if(v["setQstn"]!="" && typeof v["setQstn"] != "undefined"){
-				KD.utils.Action.setQuestionValue(v["setQstn"],results[k]);
+            if(v["setQstn"]!="" && typeof v["setQstn"] != "undefined" && K('field['+v["setQstn"]+']')){
+				K('field['+v["setQstn"]+']').value(results[k]);
             }
 			// If callback property exists
 			if(v.callback){v.callback(results[k]);}
@@ -138,11 +142,80 @@
 				configObj.bridgeConfig.attributes.push(k)
 			})
 		}
-        var templateId = (configObj.bridgeConfig.templateId && configObj.bridgeConfig.templateId!="null") ? configObj.bridgeConfig.templateId : clientManager.templateId;
+//        var templateId = (configObj.bridgeConfig.templateId && configObj.bridgeConfig.templateId!="null") ? configObj.bridgeConfig.templateId : clientManager.templateId;
         //create the connector necessary to connect to the bridge
-        var connector = new KD.bridges.BridgeConnector({templateId: templateId});
+//        var connector = new KD.bridges.BridgeConnector({templateId: templateId});
 		// Run the configured afterInit function
         if(configObj.afterInit){configObj.afterInit();}
+		K('bridgedResource['+configObj.bridgeConfig.model+']')	.load({
+			attributes: configObj.bridgeConfig.attributes, 
+			values: parameters,
+			success: function(response) {
+				configObj.dataArray = [];
+				//Retrieve Records
+				configObj.records=response;//.records;
+				// More than 1 record returned
+				if(typeof configObj.processSingleResult == "undefined" || !configObj.processSingleResult || (configObj.records.length > 1 && configObj.records != null)){    
+					//Iterate through row results to retrieve data
+					$.each(configObj.records, function(i,record){
+						var obj = {};
+						//Iterate through the configured columns to match with data returned from bridge
+						$.each(configObj.data, function(attribute, attributeObject){
+							if (typeof record[attribute] != "undefined"){
+								if (attributeObject["date"] == true && typeof attributeObject["moment"] != "undefined") {
+									var attributeValue = moment(record[attribute]).format(attributeObject["moment"]);
+								} else {
+									var attributeValue = record[attribute];
+								}
+							}
+							else{
+								var attributeValue = '';
+							}
+							obj[attribute] = attributeValue;
+						});
+						configObj.dataArray.push(obj);
+
+					});
+					// Append Column to beginning of table contain row expansion for responsive Plugin
+					if(configObj.responsive){
+						configObj.columns.unshift({
+							defaultContent: '',
+							className: 'control',
+							orderable: false,
+						});
+					}
+					// Create DataTable Object.
+					createDataTable(configObj);
+				}
+				// Only one record returned
+				else if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && configObj.records.length == 1 && configObj.records != null){
+					// TODO: can this code be placed into a function and also used with performBridgeRequestSingle.  Note: response is different
+					// in each scenario and will need to be accounted for in the code.
+					var resultsObj = {};
+					// Iterate through the data configuration of the search object
+					$.each(configObj.data, function( k, v ){
+						// Check for Bridge Search response that correlates to the key
+						if (typeof response.records[0].attributes[k] != "undefined"){
+							// Set objVal to the value resturned by the bridge
+							var objVal = response.records[0].attributes[k];
+						}
+						else{
+							var objVal = '';
+						}
+						resultsObj[k] = objVal;
+					});
+					setValuesFromResults(configObj.data, resultsObj);
+				}
+				// No records returned
+				else{
+					if(configObj.noResults){configObj.noResults();}
+				}
+				if(configObj.success){configObj.success();}
+			},
+		});
+		
+		
+		/*
 		connector.search(configObj.bridgeConfig.model, configObj.bridgeConfig.qualification_mapping, {
 			parameters: parameters,
 			attributes: configObj.bridgeConfig.attributes,
@@ -208,7 +281,7 @@
 				}
 				if(configObj.success){configObj.success();}
 			},
-		}); 													
+		}); 	*/												
     }	
 
     /**
@@ -258,8 +331,8 @@
 							// Set objVal to the value resturned by the bridge
 							var objVal = response.attributes[k];
 							// If "setQstn" configuration exist
-							if(typeof v["setQstn"] != "undefined" && v["setQstn"]!=""){
-								KD.utils.Action.setQuestionValue(v["setQstn"],objVal);
+							if(typeof v["setQstn"] != "undefined" && v["setQstn"]!="" && K('field['+v["setQstn"]+']')){
+								K('field['+v["setQstn"]+']').value(objVal);
 							}
 							// If "callback" exists
 							if(typeof v["callback"] != "undefined" && v["callback"]!=""){
