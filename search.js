@@ -2,17 +2,15 @@
 KD-Search CE
 
 **Completed 1/14/2016 Brian Peterson
-- Changed naming convention of Properties.
-	resultsElement to resultsContainer
-	tableId resultsContainerId
-- Changed fn name of initResultsElement to initializeResultsContainer
+- Changed order of initialize and execute functions.
+- Corrected Error in executeSearch fn
+- Updated list fn to use new object properties for success and success_empty
+- Moved fn setValuesFromResults to lower in code
 
 **TODO
 - Is there an equivilant to BUNDLE.config.commonTemplateId
 - How is the templateId (Slug) provided to the Bridge?
 - change setQstn property to setField
-- change properties of Bridge to match new naming convention
-- Change name of resultsContainerId param
 
 **/
 (function($) {
@@ -54,6 +52,19 @@ KD-Search CE
    
 
     /**
+     * Executes the search for the configured search object.
+     * @param {Obj} Search configuration object.
+	 * @param {Ojb} Configuration object to over ride first param.
+     */
+	search.executeSearch = function(searchObj1, searchObj2) {
+		var configObj=$.extend( true, {}, searchObj1, searchObj2 );
+		configObj = search.initialize(configObj);
+		if(configObj.execute){
+			configObj.execute();
+		}	
+    };
+
+    /**
      * Initialize the searchConfig Object 
      * @param {Object} Configuration object(s)
      */
@@ -72,34 +83,6 @@ KD-Search CE
 				obj=initializeResultsContainer(obj); 
             }
 			return obj
-    }
-    
-    /**
-     * Executes the search for the configured search object.
-     * @param {Obj} Search configuration object.
-	 * @param {Ojb} Configuration object to over ride first param.
-     */
-	search.executeSearch = function(searchObj1, searchObj2) {
-		searchObj1 = search.initialize(searchObj1);
-		if(searchObj1.execute){
-			var configObj=$.extend( true, {}, searchObj1, searchObj2 );
-			configObj.execute();
-		}	
-    };
-    /**
-     * Set Values from selected row
-	 * @params {Object} data config object
-	 * @params {Object} data returned from selection.
-     */
-    function setValuesFromResults(configData, results){ //rowCallback
-        $.each(configData, function( k, v){
-			var field = K('field['+v["setQstn"]+']');
-            if(v["setQstn"]!="" && typeof v["setQstn"] != "undefined" && field){
-				field.value(results[k]);
-            }
-			// If callback property exists
-			if(v.callback){v.callback(results[k]);}
-        });
     }
 	
     /**
@@ -205,7 +188,7 @@ KD-Search CE
      */
     function performBridgeRequestList(){
         var configObj = this;
-        configObj.before();
+		if(configObj.before){configObj.before();};
         //Retrieve and set the Bridge parameter values using JQuery
         var parameters = {};
         $.each(configObj.bridgeConfig.parameters, function(i,v){
@@ -226,52 +209,58 @@ KD-Search CE
 			values: parameters,
 			success: function(response) {
 					configObj.response=response;
-       				if(typeof configObj.processSingleResult == "undefined" || !configObj.processSingleResult || ($(configObj.response).size() > 1 && configObj.response != null)){    
-						if(configObj.loadedcallback){configObj.loadedcallback();}
-						this.$resultsList = $("<ul id='resultList'>");
-						var self = this; // reference to this in current scope
-						//Iterate through row results to retrieve data
-                        $.each(configObj.response, function(i,record){
-							self.$singleResult = $("<li id='result'>");
-							//Iterate through the configured columns to match with data returned from bridge
-                            $.each(configObj.data, function(attribute, attributeObject){
-								if (typeof record[attribute] != "undefined"){
-                                    var title ="";
-									if(attributeObject["title"]){
-										var $title = $('<div>', {class: "title " + attributeObject['className']}).html(attributeObject["title"]);
-										self.$singleResult.append($title);
+					if($(configObj.response).size() > 0 || !configObj.success_empty){
+						// Execute success callback
+						if(configObj.success){configObj.success();}
+	       					// Only one record returned
+							if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).size() == 1 && configObj.response != null){
+							if (configObj.response.constructor == Object){  // result from single Bridge
+								var objVal = configObj.response;
+							}
+							else if (configObj.response.constructor == Array){  // result from multiple Bridge
+								var objVal = configObj.response[0];
+							}
+							setValuesFromResults(configObj.data, objVal);
+						}
+	       				// More than one record returned
+	       				else if(typeof configObj.processSingleResult == "undefined" || !configObj.processSingleResult || ($(configObj.response).size() > 1 && configObj.response != null)){    
+							if(configObj.loadedcallback){configObj.loadedcallback();}
+							this.$resultsList = $("<ul id='resultList'>");
+							var self = this; // reference to this in current scope
+							//Iterate through row results to retrieve data
+	                        $.each(configObj.response, function(i,record){
+								self.$singleResult = $("<li id='result'>");
+								//Iterate through the configured columns to match with data returned from bridge
+	                            $.each(configObj.data, function(attribute, attributeObject){
+									if (typeof record[attribute] != "undefined"){
+	                                    var title ="";
+										if(attributeObject["title"]){
+											var $title = $('<div>', {class: "title " + attributeObject['className']}).html(attributeObject["title"]);
+											self.$singleResult.append($title);
+										}
+										if (attributeObject["date"] == true && typeof attributeObject["moment"] != "undefined") {
+	                                        var attributeValue = moment(record[attribute]).format(attributeObject["moment"]);
+	                                    } else {
+	                                        //var attributeValue = record.attributes[attribute];
+											var $value = $('<div>', {class: attributeObject["className"]}).html(record[attribute]);
+											self.$singleResult.append($value); 
+											self.$singleResult.data(attribute,record[attribute])
+	                                    }
+	                                }
+	                                else{
+	                                self.$singleResult.append($('<div>'));
 									}
-									if (attributeObject["date"] == true && typeof attributeObject["moment"] != "undefined") {
-                                        var attributeValue = moment(record[attribute]).format(attributeObject["moment"]);
-                                    } else {
-                                        //var attributeValue = record.attributes[attribute];
-										var $value = $('<div>', {class: attributeObject["className"]}).html(record[attribute]);
-										self.$singleResult.append($value); 
-										self.$singleResult.data(attribute,record[attribute])
-                                    }
-                                }
-                                else{
-                                self.$singleResult.append($('<div>'));
-								}
+								});
+								self.$resultsList.append(self.$singleResult);
+	                        });
+							//Set the Data Attribute to the name of the seachConfig Obj
+							configObj.resultsContainer.empty().append(this.$resultsList);
+							configObj.resultsContainer.off().on( "click", 'li', function(event){
+								setValuesFromResults(configObj.data, $(this).data());
+								if(configObj.clickCallback){configObj.clickCallback($(this).data());};
+								configObj.resultsContainer.empty();
 							});
-							self.$resultsList.append(self.$singleResult);
-                        });
-						//Set the Data Attribute to the name of the seachConfig Obj
-						configObj.resultsContainer.empty().append(this.$resultsList);
-						configObj.resultsContainer.off().on( "click", 'li', function(event){
-							setValuesFromResults(configObj.data, $(this).data());
-							if(configObj.clickCallback){configObj.clickCallback($(this).data());};
-							configObj.resultsContainer.empty();
-						});
-                    }
-					else if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).size() == 1 && configObj.response != null){
-						if (configObj.response.constructor == Object){  // result from single Bridge
-							var objVal = configObj.response;
-						}
-						else if (configObj.response.constructor == Array){  // result from multiple Bridge
-							var objVal = configObj.response[0];
-						}
-						setValuesFromResults(configObj.data, objVal);
+	                    }
 					}
 					else{
 						configObj.noResults();
@@ -289,6 +278,26 @@ KD-Search CE
       event.stopPropagation();
     });
     
+   	/****************************************************************************
+								HELPERS / SHARED FUNCTIONS							   
+	****************************************************************************/
+
+	/**
+	* Set Values from selected row
+	* @params {Object} data config object
+	* @params {Object} data returned from selection.
+	*/
+    function setValuesFromResults(configData, results){ //rowCallback
+        $.each(configData, function( k, v){
+			var field = K('field['+v["setQstn"]+']');
+            if(v["setQstn"]!="" && typeof v["setQstn"] != "undefined" && field){
+				field.value(results[k]);
+            }
+			// If callback property exists
+			if(v.callback){v.callback(results[k]);}
+        });
+    }
+
     /**
      * Returns Search Object
 	 * Creates resultsContainer and adds it to DOM based on Search Config
@@ -307,7 +316,7 @@ KD-Search CE
 			obj.appendTo.append(obj.resultsContainer);
 		}
 		else if(typeof obj.appendTo == "string"){ // if string
-			obj.appendTo = $(obj.appendTo).append(obj.resultsContainer);
+			obj.appendTo = $(obj.appendTo).appendTo(obj.resultsContainer);
 		}
 		else if(typeof obj.appendTo == "function"){ // if function
 			obj.appendTo = obj.appendTo().append(obj.resultsContainer);
