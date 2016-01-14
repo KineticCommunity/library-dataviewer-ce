@@ -2,9 +2,12 @@
 KD-Search CE
 
 **Completed 1/14/2016 Brian Peterson
-- Changed setQstn property to setField
+- Removed loadedCallback - previous property
+- Misc cleanup
+
 
 **TODO
+- clear table and list when performing search.  Currently results stay when running the search.  IE one results returned in second search.
 - Is there an equivilant to BUNDLE.config.commonTemplateId
 - How is the templateId (Slug) provided to the Bridge?
 
@@ -208,8 +211,8 @@ KD-Search CE
 					if($(configObj.response).size() > 0 || !configObj.success_empty){
 						// Execute success callback
 						if(configObj.success){configObj.success();}
-	       					// Only one record returned
-							if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).size() == 1 && configObj.response != null){
+	       				// Only one record returned
+						if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).size() == 1 && configObj.response != null){
 							if (configObj.response.constructor == Object){  // result from single Bridge
 								var objVal = configObj.response;
 							}
@@ -220,7 +223,6 @@ KD-Search CE
 						}
 	       				// More than one record returned
 	       				else if(typeof configObj.processSingleResult == "undefined" || !configObj.processSingleResult || ($(configObj.response).size() > 1 && configObj.response != null)){    
-							if(configObj.loadedcallback){configObj.loadedcallback();}
 							this.$resultsList = $("<ul id='resultList'>");
 							var self = this; // reference to this in current scope
 							//Iterate through row results to retrieve data
@@ -249,7 +251,6 @@ KD-Search CE
 								});
 								self.$resultsList.append(self.$singleResult);
 	                        });
-							//Set the Data Attribute to the name of the seachConfig Obj
 							configObj.resultsContainer.empty().append(this.$resultsList);
 							configObj.resultsContainer.off().on( "click", 'li', function(event){
 								setValuesFromResults(configObj.data, $(this).data());
@@ -259,10 +260,14 @@ KD-Search CE
 	                    }
 					}
 					else{
-						configObj.noResults();
+						if(configObj.success_empty){configObj.success_empty();}
 					} 
-                    if(configObj.success){configObj.success();}
+					if(configObj.complete){configObj.complete();}
                 },
+				error: function(response){
+					if(configObj.error){configObj.error();}
+					if(configObj.complete){configObj.complete();}
+				}
             }); 
     }
  
@@ -275,7 +280,7 @@ KD-Search CE
     });
     
    	/****************************************************************************
-								HELPERS / SHARED FUNCTIONS							   
+								PRIVATE HELPERS / SHARED FUNCTIONS							   
 	****************************************************************************/
 
 	/**
@@ -350,8 +355,6 @@ KD-Search CE
 	function createDataTable(configObj){
 		configObj.tableObj = $('#'+configObj.resultsContainerId).DataTable( configObj );
 		configObj.tableObj.rows.add(configObj.dataArray).draw();
-		//Set the name data attribute to the name of the search.searchConfig Obj
-		if(configObj.loadedcallback){configObj.loadedcallback();}
 		// Bind Click Event based on where the select attribute extists ie:<tr> or <td>
 		$('#'+configObj.resultsContainerId).off().on( "click", 'td', function(event){
 			// Ensure user has not clicked on an element with control class used by the responsive plugin to expand info
