@@ -1,21 +1,18 @@
 /**
 KD-Search CE
 
-**Completed 1/13/2016 Brian Peterson
--Various mior code changes
--updated executeSearch function to better represent 2 objects as paramters
--Validate conistent use of success callback configured in the search
--Modified naming convention of callbacks (before, success,
-success_empty, error, complete)
--Change ucFirst to public function to replicate code in CE version
--Update Namespace to KDSearch to prevent being overwritten by Core
+**Completed 1/14/2016 Brian Peterson
+- Changed naming convention of Properties.
+	resultsElement to resultsContainer
+	tableId resultsContainerId
+- Changed fn name of initResultsElement to initializeResultsContainer
 
 **TODO
 - Is there an equivilant to BUNDLE.config.commonTemplateId
 - How is the templateId (Slug) provided to the Bridge?
 - change setQstn property to setField
 - change properties of Bridge to match new naming convention
-- Change name of tableId param
+- Change name of resultsContainerId param
 
 **/
 (function($) {
@@ -34,7 +31,7 @@ success_empty, error, complete)
     /* Define default properties for defaultsBridgeDataTable object. */
     var defaultsBridgeDataTable = {
         execute: performBridgeRequestDataTable,
-		resultsElement : '<table cellspacing="0", border="0", class="display">',
+		resultsContainer : '<table cellspacing="0", border="0", class="display">',
         bridgeConfig:{
 //			templateId: BUNDLE.config.commonTemplateId
 		},
@@ -52,7 +49,7 @@ success_empty, error, complete)
     /* Define default properties for defaultsBridgeList object. */
     var defaultsBridgeList = {
         execute: performBridgeRequestList,
-		resultsElement : '<div>',
+		resultsContainer : '<div>',
     };
    
 
@@ -66,13 +63,13 @@ success_empty, error, complete)
                 // Entend defaults into the configuration
                 obj=$.extend( {}, defaultsBridgeDataTable, obj );
                 // Create a table element for Datatables and add to DOM
-				obj=initResultsElement(obj);  
+				obj=initializeResultsContainer(obj);  
             }
             else if(obj.type=="BridgeList"){
                 // Entend defaults into the configuration
                 obj=$.extend( {}, defaultsBridgeList, obj );
                 // Create a results element for Datatables and add to DOM
-				obj=initResultsElement(obj); 
+				obj=initializeResultsContainer(obj); 
             }
 			return obj
     }
@@ -260,11 +257,11 @@ success_empty, error, complete)
 							self.$resultsList.append(self.$singleResult);
                         });
 						//Set the Data Attribute to the name of the seachConfig Obj
-						configObj.resultsElement.empty().append(this.$resultsList);
-						configObj.resultsElement.off().on( "click", 'li', function(event){
+						configObj.resultsContainer.empty().append(this.$resultsList);
+						configObj.resultsContainer.off().on( "click", 'li', function(event){
 							setValuesFromResults(configObj.data, $(this).data());
 							if(configObj.clickCallback){configObj.clickCallback($(this).data());};
-							configObj.resultsElement.empty();
+							configObj.resultsContainer.empty();
 						});
                     }
 					else if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).size() == 1 && configObj.response != null){
@@ -294,26 +291,26 @@ success_empty, error, complete)
     
     /**
      * Returns Search Object
-	 * Creates resultsElement and adds it to DOM based on Search Config
+	 * Creates resultsContainer and adds it to DOM based on Search Config
      * @param {Object} Search Object
      */	
-	function initResultsElement(obj){
-		// Create resultsElement
-		if(typeof obj.resultsElement == "string"){ // if string
-			obj.resultsElement = $(obj.resultsElement).attr('id',obj.tableId);
+	function initializeResultsContainer(obj){
+		// Create resultsContainer
+		if(typeof obj.resultsContainer == "string"){ // if string
+			obj.resultsContainer = $(obj.resultsContainer).attr('id',obj.resultsContainerId);
 		}
-		else if(typeof obj.resultsElement == "function"){ // if function
-			obj.resultsElement = obj.resultsElement().attr('id',obj.tableId);
+		else if(typeof obj.resultsContainer == "function"){ // if function
+			obj.resultsContainer = obj.resultsContainer().attr('id',obj.resultsContainerId);
 		}
 		// Append to DOM
 		if(obj.appendTo instanceof $){ // if jQuery Obj
-			obj.appendTo.append(obj.resultsElement);
+			obj.appendTo.append(obj.resultsContainer);
 		}
 		else if(typeof obj.appendTo == "string"){ // if string
-			obj.appendTo = $(obj.appendTo).append(obj.resultsElement);
+			obj.appendTo = $(obj.appendTo).append(obj.resultsContainer);
 		}
 		else if(typeof obj.appendTo == "function"){ // if function
-			obj.appendTo = obj.appendTo().append(obj.resultsElement);
+			obj.appendTo = obj.appendTo().append(obj.resultsContainer);
 		}
 		return obj;
 	}
@@ -346,12 +343,12 @@ success_empty, error, complete)
 	* @param {Object} Search Object used to create the DataTable
 	*/
 	function createDataTable(configObj){
-		configObj.tableObj = $('#'+configObj.tableId).DataTable( configObj );
+		configObj.tableObj = $('#'+configObj.resultsContainerId).DataTable( configObj );
 		configObj.tableObj.rows.add(configObj.dataArray).draw();
 		//Set the name data attribute to the name of the search.searchConfig Obj
 		if(configObj.loadedcallback){configObj.loadedcallback();}
 		// Bind Click Event based on where the select attribute extists ie:<tr> or <td>
-		$('#'+configObj.tableId).off().on( "click", 'td', function(event){
+		$('#'+configObj.resultsContainerId).off().on( "click", 'td', function(event){
 			// Ensure user has not clicked on an element with control class used by the responsive plugin to expand info
 			if(!$(this).hasClass('control')){
 				// Get closest row which is a parent row.
@@ -366,7 +363,7 @@ success_empty, error, complete)
 				if(configObj.clickCallback){configObj.clickCallback(resultsObj);}
 				// Destroy DataTable and empty in case columns change.
 				configObj.tableObj.destroy();
-				$('#'+configObj.tableId).empty();
+				$('#'+configObj.resultsContainerId).empty();
 			}
 		});
 	}
