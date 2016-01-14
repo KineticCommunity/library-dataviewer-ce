@@ -2,15 +2,11 @@
 KD-Search CE
 
 **Completed 1/14/2016 Brian Peterson
-- Changed order of initialize and execute functions.
-- Corrected Error in executeSearch fn
-- Updated list fn to use new object properties for success and success_empty
-- Moved fn setValuesFromResults to lower in code
+- Changed setQstn property to setField
 
 **TODO
 - Is there an equivilant to BUNDLE.config.commonTemplateId
 - How is the templateId (Slug) provided to the Bridge?
-- change setQstn property to setField
 
 **/
 (function($) {
@@ -289,8 +285,8 @@ KD-Search CE
 	*/
     function setValuesFromResults(configData, results){ //rowCallback
         $.each(configData, function( k, v){
-			var field = K('field['+v["setQstn"]+']');
-            if(v["setQstn"]!="" && typeof v["setQstn"] != "undefined" && field){
+			var field = K('field['+v["setField"]+']');
+            if(v["setField"]!="" && typeof v["setField"] != "undefined" && field){
 				field.value(results[k]);
             }
 			// If callback property exists
