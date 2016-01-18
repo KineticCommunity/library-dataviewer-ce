@@ -1,9 +1,8 @@
 /**
 KD-Search CE
 
-**Completed 1/14/2016 Brian Peterson
-- Removed loadedCallback - previous property
-- Misc cleanup
+**Completed 1/18/2016 Brian Peterson
+- Clear Table and List before updating data within them.  Use case: search is performed a second time without clearing the results from first search.
 
 
 **TODO
@@ -251,11 +250,11 @@ KD-Search CE
 								});
 								self.$resultsList.append(self.$singleResult);
 	                        });
-							configObj.resultsContainer.empty().append(this.$resultsList);
-							configObj.resultsContainer.off().on( "click", 'li', function(event){
+							$("#"+configObj.resultsContainerId).empty().append(this.$resultsList);
+							$("#"+configObj.resultsContainerId).off().on( "click", 'li', function(event){
 								setValuesFromResults(configObj.data, $(this).data());
 								if(configObj.clickCallback){configObj.clickCallback($(this).data());};
-								configObj.resultsContainer.empty();
+								$("#"+configObj.resultsContainerId).empty();
 							});
 	                    }
 					}
@@ -305,22 +304,25 @@ KD-Search CE
      * @param {Object} Search Object
      */	
 	function initializeResultsContainer(obj){
-		// Create resultsContainer
-		if(typeof obj.resultsContainer == "string"){ // if string
-			obj.resultsContainer = $(obj.resultsContainer).attr('id',obj.resultsContainerId);
-		}
-		else if(typeof obj.resultsContainer == "function"){ // if function
-			obj.resultsContainer = obj.resultsContainer().attr('id',obj.resultsContainerId);
-		}
-		// Append to DOM
-		if(obj.appendTo instanceof $){ // if jQuery Obj
-			obj.appendTo.append(obj.resultsContainer);
-		}
-		else if(typeof obj.appendTo == "string"){ // if string
-			obj.appendTo = $(obj.appendTo).appendTo(obj.resultsContainer);
-		}
-		else if(typeof obj.appendTo == "function"){ // if function
-			obj.appendTo = obj.appendTo().append(obj.resultsContainer);
+		if($("#"+obj.resultsContainerId).length == 0){
+			// Create resultsContainer
+			if(typeof obj.resultsContainer == "string"){ // if string
+				obj.resultsContainer = $(obj.resultsContainer).attr('id',obj.resultsContainerId);
+			}
+			else if(typeof obj.resultsContainer == "function"){ // if function
+				obj.resultsContainer = obj.resultsContainer().attr('id',obj.resultsContainerId);
+			}
+			// Append to DOM
+			if(obj.appendTo instanceof $){ // if jQuery Obj
+				obj.appendTo.append(obj.resultsContainer);
+			}
+			else if(typeof obj.appendTo == "string"){ // if string
+				obj.appendTo = $(obj.appendTo).appendTo(obj.resultsContainer);
+			}
+			else if(typeof obj.appendTo == "function"){ // if function
+				obj.appendTo = obj.appendTo().append(obj.resultsContainer);
+			}
+			return obj;
 		}
 		return obj;
 	}
@@ -353,6 +355,8 @@ KD-Search CE
 	* @param {Object} Search Object used to create the DataTable
 	*/
 	function createDataTable(configObj){
+		// Set property to destroy any DataTable which may already exist.
+		configObj.destroy = true;
 		configObj.tableObj = $('#'+configObj.resultsContainerId).DataTable( configObj );
 		configObj.tableObj.rows.add(configObj.dataArray).draw();
 		// Bind Click Event based on where the select attribute extists ie:<tr> or <td>
@@ -369,7 +373,7 @@ KD-Search CE
 				// Set results based on Search config
 				setValuesFromResults(configObj.data, resultsObj);
 				if(configObj.clickCallback){configObj.clickCallback(resultsObj);}
-				// Destroy DataTable and empty in case columns change.
+				// Destroy DataTable and empty container in case columns change.
 				configObj.tableObj.destroy();
 				$('#'+configObj.resultsContainerId).empty();
 			}
