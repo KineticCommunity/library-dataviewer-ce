@@ -254,7 +254,9 @@ KD-Search CE
 							$("#"+configObj.resultsContainerId).off().on( "click", 'li', function(event){
 								setValuesFromResults(configObj.data, $(this).data());
 								if(configObj.clickCallback){configObj.clickCallback($(this).data());};
-								$("#"+configObj.resultsContainerId).empty();
+								if(configObj.clearOnClick || typeof configObj.clearOnClick == "undefined"){
+									$("#"+configObj.resultsContainerId).empty();
+								}
 							});
 	                    }
 					}
@@ -375,7 +377,9 @@ KD-Search CE
 				if(configObj.clickCallback){configObj.clickCallback(resultsObj);}
 				// Destroy DataTable and empty container in case columns change.
 				configObj.tableObj.destroy();
-				$('#'+configObj.resultsContainerId).empty();
+				if(configObj.clearOnClick || typeof configObj.clearOnClick == "undefined"){
+					$('#'+configObj.resultsContainerId).empty();
+				}
 			}
 		});
 	}
