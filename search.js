@@ -4,6 +4,9 @@ KD-Search CE
 **Completed 1/18/2016 Brian Peterson
 - Clear Table and List before updating data within them.  Use case: search is performed a second time without clearing the results from first search.
 
+**Completed 2/11/2016
+- Added clearOnClick functionality and functions to Bridge parameters
+- Changed how the list elements are created to better support use in IE
 
 **TODO
 - clear table and list when performing search.  Currently results stay when running the search.  IE one results returned in second search.
@@ -232,31 +235,28 @@ KD-Search CE
 						}
 	       				// More than one record returned
 	       				else if(typeof configObj.processSingleResult == "undefined" || !configObj.processSingleResult || ($(configObj.response).size() > 1 && configObj.response != null)){    
-							this.$resultsList = $("<ul id='resultList'>");
+							this.$resultsList = $('<ul/>').attr('id','resultList');
 							var self = this; // reference to this in current scope
 							//Iterate through row results to retrieve data
 	                        $.each(configObj.response, function(i,record){
-								self.$singleResult = $("<li id='result'>");
+								self.$singleResult = $('<li/>').attr('id', 'result');
 								//Iterate through the configured columns to match with data returned from bridge
 	                            $.each(configObj.data, function(attribute, attributeObject){
 									if (typeof record[attribute] != "undefined"){
 	                                    var title ="";
 										if(attributeObject["title"]){
-											var $title = $('<div>', {class: "title " + attributeObject['className']}).html(attributeObject["title"]);
+											var $title = $('<div/>').addClass("title " + attributeObject['className']).html(attributeObject["title"]);
 											self.$singleResult.append($title);
 										}
 										if (attributeObject["date"] == true && typeof attributeObject["moment"] != "undefined") {
 	                                        var attributeValue = moment(record[attribute]).format(attributeObject["moment"]);
 	                                    } else {
-	                                        //var attributeValue = record.attributes[attribute];
-											var $value = $('<div>', {class: attributeObject["className"]}).html(record[attribute]);
+											var $value = $('<div/>').addClass(attributeObject['className']).html(attributeValue);
 											self.$singleResult.append($value); 
 											self.$singleResult.data(attribute,record[attribute])
 	                                    }
 	                                }
-	                                else{
-	                                self.$singleResult.append($('<div>'));
-									}
+
 								});
 								self.$resultsList.append(self.$singleResult);
 	                        });
