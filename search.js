@@ -92,9 +92,14 @@ KD-Search CE
 		convertDataToColumns(configObj);
 		//Retrieve and set the Bridge parameter values using JQuery
         var parameters = {};
-        $.each(configObj.bridgeConfig.parameters, function(i,v){
-            parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
-        });
+		$.each(configObj.bridgeConfig.parameters, function(i,v){
+            if(typeof v == "function"){
+				parameters[i] = v();
+			}
+			if(typeof v == "string"){
+				parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
+			}
+		});
 		// Retrieve Bridge Search Attributes from Search Object
 		if(typeof configObj.bridgeConfig.attributes == "undefined"){
 			configObj.bridgeConfig.attributes = [];
@@ -189,9 +194,14 @@ KD-Search CE
 		if(configObj.before){configObj.before();};
         //Retrieve and set the Bridge parameter values using JQuery
         var parameters = {};
-        $.each(configObj.bridgeConfig.parameters, function(i,v){
-            parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
-        });
+		$.each(configObj.bridgeConfig.parameters, function(i,v){
+            if(typeof v == "function"){
+				parameters[i] = v();
+			}
+			if(typeof v == "string"){
+				parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
+			}
+		});
 		// Retrieve Bridge Search Attributes from Search Object
 		if(typeof configObj.bridgeConfig.attributes == "undefined"){
 			configObj.bridgeConfig.attributes = [];
