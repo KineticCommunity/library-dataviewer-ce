@@ -625,6 +625,8 @@ KD-Search CE
     * @param {Object} Search Object used to create the DataTable
     */
     function createDataTable(configObj){
+        // Set property to destroy any DataTable which may already exist.
+        configObj.destroy = true;
         configObj.tableObj = $('#'+configObj.resultsContainerId).DataTable( configObj );
         configObj.tableObj.rows.add(configObj.dataArray).draw();
         // Bind Click Event based on where the select attribute extists ie:<tr> or <td>
