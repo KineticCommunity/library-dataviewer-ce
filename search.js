@@ -18,7 +18,7 @@ KD-Search CE
     var defaultsBridgeDataTable = {
         execute: performBridgeRequestDataTable,
         resultsContainer : '<table cellspacing="0", border="0", class="display">',
-        bridgeConfig:{
+        resource:{
         //templateId: BUNDLE.config.commonTemplateId
     },
     // Properties specific to DataTables
@@ -124,26 +124,26 @@ KD-Search CE
         convertDataToColumns(configObj);
     //Retrieve and set the Bridge parameter values using JQuery
         var parameters = {};
-        $.each(configObj.bridgeConfig.parameters, function(i,v){
+        $.each(configObj.resource.parameters, function(i,v){
             if(typeof v == "function"){
                 parameters[i] = v();
             }
             if(typeof v == "string"){
-                parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
+                parameters[i]=$(configObj.resource.parameters[i]).val();
             }
         });
         // Retrieve Bridge Search Attributes from Search Object
-        if(typeof configObj.bridgeConfig.attributes == "undefined"){
-            configObj.bridgeConfig.attributes = [];
+        if(typeof configObj.resource.attributes == "undefined"){
+            configObj.resource.attributes = [];
             $.each(configObj.data, function( k, v ){
-                configObj.bridgeConfig.attributes.push(k)
+                configObj.resource.attributes.push(k)
             })
         }
-        //var templateId = (configObj.bridgeConfig.templateId && configObj.bridgeConfig.templateId!="null") ? configObj.bridgeConfig.templateId : clientManager.templateId;
+        //var templateId = (configObj.resource.templateId && configObj.resource.templateId!="null") ? configObj.resource.templateId : clientManager.templateId;
         //create the connector necessary to connect to the bridge
         //var connector = new KD.bridges.BridgeConnector({templateId: templateId});
-        K('bridgedResource['+configObj.bridgeConfig.model+']').load({
-            attributes: configObj.bridgeConfig.attributes, 
+        K('bridgedResource['+configObj.resource.name+']').load({
+            attributes: configObj.resource.attributes, 
             values: parameters,
             success: function(response) {
                 configObj.dataArray = [];
@@ -196,7 +196,7 @@ KD-Search CE
                         if(configObj.responsive){
                             configObj.columns.unshift({
                                 defaultContent: '',
-                                className: 'control',
+                                class: 'control',
                                 orderable: false,
                             });
                         }
@@ -279,7 +279,7 @@ KD-Search CE
                         if(configObj.responsive){
                             configObj.columns.unshift({
                                 defaultContent: '',
-                                className: 'control',
+                                class: 'control',
                                 orderable: false,
                             });
                         }
@@ -307,26 +307,26 @@ KD-Search CE
         if(configObj.before){configObj.before();};
         //Retrieve and set the Bridge parameter values using JQuery
         var parameters = {};
-        $.each(configObj.bridgeConfig.parameters, function(i,v){
+        $.each(configObj.resource.parameters, function(i,v){
             if(typeof v == "function"){
                 parameters[i] = v();
             }
             if(typeof v == "string"){
-                parameters[i]=$(configObj.bridgeConfig.parameters[i]).val();
+                parameters[i]=$(configObj.resource.parameters[i]).val();
             }
         });
         // Retrieve Bridge Search Attributes from Search Object
-        if(typeof configObj.bridgeConfig.attributes == "undefined"){
-            configObj.bridgeConfig.attributes = [];
+        if(typeof configObj.resource.attributes == "undefined"){
+            configObj.resource.attributes = [];
             $.each(configObj.data, function( k, v ){
-                configObj.bridgeConfig.attributes.push(k)
+                configObj.resource.attributes.push(k)
             })
         }
-        //var templateId = (configObj.bridgeConfig.templateId && configObj.bridgeConfig.templateId!="null") ? configObj.bridgeConfig.templateId : clientManager.templateId;
+        //var templateId = (configObj.resource.templateId && configObj.resource.templateId!="null") ? configObj.resource.templateId : clientManager.templateId;
         //create the connector necessary to connect to the bridge
         //var connector = new KD.bridges.BridgeConnector({templateId: templateId});
-    K('bridgedResource['+configObj.bridgeConfig.resource+']')   .load({
-        attributes: configObj.bridgeConfig.attributes, 
+    K('bridgedResource['+configObj.resource.name+']').load({
+        attributes: configObj.resource.attributes, 
         values: parameters,
         success: function(response) {
                 configObj.response=response;
@@ -355,13 +355,13 @@ KD-Search CE
                         if (typeof record[attribute] != "undefined"){
                             var title ="";
                             if(attributeObject["title"]){
-                                var $title = $('<div/>').addClass("title " + attributeObject['className']).html(attributeObject["title"]);
+                                var $title = $('<div/>').addClass("title " + attributeObject['class']).html(attributeObject["title"]);
                                 self.$singleResult.append($title);
                             }
                             if (attributeObject["date"] == true && typeof attributeObject["moment"] != "undefined") {
                                 var attributeValue = moment(record[attribute]).format(attributeObject["moment"]);
                             } else {
-                                var $value = $('<div/>').addClass(attributeObject['className']).html(record[attribute]);
+                                var $value = $('<div/>').addClass(attributeObject['class']).html(record[attribute]);
                                 self.$singleResult.append($value); 
                                 self.$singleResult.data(attribute,record[attribute])
                             }
@@ -449,7 +449,7 @@ KD-Search CE
                 if(configObj.responsive){
                     configObj.columns.unshift({
                         defaultContent: '',
-                        className: 'control',
+                        class: 'control',
                         orderable: false,
                     });
                 }
@@ -498,13 +498,13 @@ KD-Search CE
                         if (typeof record[attribute] != "undefined"){
                             var title ="";
                             if(attributeObject["title"]){
-                                var $title = $('<div/>').addClass("title " + attributeObject['className']).html(attributeObject["title"]);
+                                var $title = $('<div/>').addClass("title " + attributeObject['class']).html(attributeObject["title"]);
                                 self.$singleResult.append($title);
                             }
                             if (attributeObject["date"] == true && typeof attributeObject["moment"] != "undefined") {
                                 var attributeValue = moment(record[attribute]).format(attributeObject["moment"]);
                             } else {
-                                var $value = $('<div/>').addClass(attributeObject['className']).html(record[attribute]);
+                                var $value = $('<div/>').addClass(attributeObject['class']).html(record[attribute]);
                                 self.$singleResult.append($value); 
                                 self.$singleResult.data(attribute,record[attribute])
                             }
