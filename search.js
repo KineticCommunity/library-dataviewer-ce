@@ -1,18 +1,5 @@
 /**
 KD-Search CE
-
-**Completed 1/18/2016 Brian Peterson
-- Clear Table and List before updating data within them.  Use case: search is performed a second time without clearing the results from first search.
-
-**Completed 2/11/2016
-- Added clearOnClick functionality and functions to Bridge parameters
-- Changed how the list elements are created to better support use in IE
-
-**TODO
-- clear table and list when performing search.  Currently results stay when running the search.  IE one results returned in second search.
-- Is there an equivilant to BUNDLE.config.commonTemplateId
-- How is the templateId (Slug) provided to the Bridge?
-
 **/
 (function($){
     // create the KDSearch global object
@@ -386,7 +373,7 @@ KD-Search CE
                 $("#"+configObj.resultsContainerId).off().on( "click", 'li', function(event){
                     setValuesFromResults(configObj.data, $(this).data());
                     if(configObj.clickCallback){configObj.clickCallback($(this).data());};
-                    if(configObj.clearOnClick || typeof configObj.clearOnClick == "undefined"){
+                    if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
                         $("#"+configObj.resultsContainerId).empty();
                     }
                 });
@@ -530,7 +517,7 @@ KD-Search CE
                 $("#"+configObj.resultsContainerId).off().on( "click", 'li', function(event){
                     setValuesFromResults(configObj.data, $(this).data());
                     if(configObj.clickCallback){configObj.clickCallback($(this).data());};
-                    if(configObj.clearOnClick || typeof configObj.clearOnClick == "undefined"){
+                    if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
                         $("#"+configObj.resultsContainerId).empty();
                     }
                 });
@@ -643,7 +630,7 @@ KD-Search CE
                 // Set results based on Search config
                 setValuesFromResults(configObj.data, resultsObj);
                 if(configObj.clickCallback){configObj.clickCallback(resultsObj);}
-                if(configObj.clearOnClick || typeof configObj.clearOnClick == "undefined"){
+                if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
                     configObj.destroy = true;
                     // Destroy DataTable and empty container in case columns change.
                     configObj.tableObj.destroy();
