@@ -212,6 +212,7 @@ KD-Search CE
             // Append Column to beginning of table contain row expansion for responsive Plugin
             if(configObj.responsive){
                 configObj.columns.unshift({
+                    title: '&nbsp',
                     defaultContent: '',
                     class: 'control',
                     orderable: false,
