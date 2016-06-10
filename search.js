@@ -46,7 +46,7 @@ KD-Search CE
      */
     search.executeSearch = function(destination, configObj) {
         configObj.destination = evaluteObjType(destination);
-        if(configObj.before){configObj.before();};
+        if(configObj.before){configObj.before(configObj);};
         //Retrieve and set the Bridge parameter values using JQuery
         var parameters = {};
         $.each(configObj.resource.parameters, function(i,v){
@@ -64,7 +64,7 @@ KD-Search CE
                 configObj.response = response;
                 if($(configObj.response).size() > 0 || !configObj.successEmpty){
                     // Execute success callback
-                    if(configObj.success){configObj.success(response);}
+                    if(configObj.success){configObj.success(configObj);}
                     // Only one record returned
                     if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).size() == 1){
                         setValuesFromResults(configObj.data, configObj.response[0]);
@@ -78,13 +78,13 @@ KD-Search CE
                 }
                 // No records returned
                 else{
-                    if(configObj.successEmpty){configObj.successEmpty();}
+                    if(configObj.successEmpty){configObj.successEmpty(configObj);}
                 }
-                if(configObj.complete){configObj.complete();}
+                if(configObj.complete){configObj.complete(configObj);}
             },
             error: function(response) {
-                if(configObj.error){configObj.error();}
-                if(configObj.complete){configObj.complete();}
+                if(configObj.error){configObj.error(configObj);}
+                if(configObj.complete){configObj.complete(configObj);}
             },
         });
 
