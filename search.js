@@ -64,17 +64,9 @@ KD-Search CE
                 configObj.response = response;
                 if($(configObj.response).size() > 0 || !configObj.successEmpty){
                     // Execute success callback
-                    if(configObj.success){configObj.success(configObj);}
-                    // Only one record returned
-                    if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).size() == 1){
-                        setValuesFromResults(configObj.data, configObj.response[0]);
-                        if(configObj.clickCallback){configObj.clickCallback(configObj.response[0]);}
-                    }
-                    // More than 1 record returned
-                    else if(typeof configObj.processSingleResult == "undefined" || !configObj.processSingleResult ||  $(configObj.response).size() > 1){      
+                    if(configObj.success){configObj.success(configObj);} 
                         // Render Results
                         configObj = configObj.renderer.type(destination, configObj)
-                    }
                 }
                 // No records returned
                 else{
@@ -200,7 +192,7 @@ KD-Search CE
         DataTables:  function(destination, configObj){
             // Entend defaults into the configuration
             configObj=$.extend( {}, defaultsBridgeDataTable, configObj );  
-            // Merge options into Object for Datatable
+            // Merge Render options into Config Obj
             configObj=$.extend( true, {}, configObj, configObj.renderer.options );
             // Create a table element for Datatables and add to DOM
             configObj.destination=destination;
@@ -218,62 +210,85 @@ KD-Search CE
                     orderable: false,
                 });
             }
-            // Set property to destroy any DataTable which may already exist.
-            configObj.destroy = true;
-            configObj.tableObj = $('#'+configObj.resultsContainerId).DataTable( configObj );
-            // Bind Click Event based on where the select attribute extists ie:<tr> or <td>
-            $('#'+configObj.resultsContainerId).off().on( "click", 'td', function(event){
-                // Ensure user has not clicked on an element with control class used by the responsive plugin to expand info
-                if(!$(this).hasClass('control')){
-                    setValuesFromResults(configObj.columns, configObj.tableObj.row().data());
-                    if(configObj.clickCallback){configObj.clickCallback(configObj.tableObj.row().data());}
-                    if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
-                        // Destroy DataTable and empty container in case columns change.
-                        configObj.tableObj.destroy();
-                        $('#'+configObj.resultsContainerId).empty();
+            if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.data).size() == 1){
+                //Destroy Table
+                $('#'+configObj.resultsContainerId).DataTable().destroy([true])
+                //Set Results to Fields
+                setValuesFromResults(configObj.columns, configObj.data[0]);
+                //Execute ClickCallback
+                if(configObj.clickCallback){configObj.clickCallback(configObj.response[0]);}
+            }
+            else{
+                // Set property to destroy any DataTable which may already exist.
+                configObj.destroy = true;
+                configObj.tableObj = $('#'+configObj.resultsContainerId).DataTable( configObj );
+                // Bind Click Event based on where the select attribute extists ie:<tr> or <td>
+                $('#'+configObj.resultsContainerId).off().on( "click", 'td', function(event){
+                    // Ensure user has not clicked on an element with control class used by the responsive plugin to expand info
+                    if(!$(this).hasClass('control')){
+                        setValuesFromResults(configObj.columns, configObj.tableObj.row().data());
+                        if(configObj.clickCallback){configObj.clickCallback(configObj.tableObj.row().data());}
+                        if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
+                            // Destroy DataTable and empty container in case columns change.
+                            configObj.tableObj.destroy();
+                            $('#'+configObj.resultsContainerId).empty();
+                        }
                     }
-                }
-            });
+                });
+            }
             return configObj;
         },
         UnorderedList: function(destination, configObj){
             // Entend defaults into the configuration
             configObj=$.extend( {}, defaultsBridgeList, configObj );
+            // Merge Render options into Config Obj
+            configObj=$.extend( true, {}, configObj, configObj.renderer.options );
             // Create a results element for Datatables and add to DOM
             configObj.destination=destination;
             obj=initializeResultsContainer(configObj);
-            this.$resultsList = $('<ul/>').attr('id','resultList');
-            var self = this; // reference to this in current scope
-            //Iterate through row results to retrieve data
-            $.each(configObj.response, function(i,record){
-                self.$singleResult = $('<li/>').attr('id', 'result');
-                //Iterate through the configured columns to match with data returned from bridge
-                $.each(configObj.data, function(attribute, attributeObject){
-                    if (typeof record[attributeObject.name] != "undefined"){
-                        var title ="";
-                        if(attributeObject["title"]){
-                            var $title = $('<div/>').addClass("title " + attributeObject['class']).html(attributeObject["title"]);
-                            self.$singleResult.append($title);
+                if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).size() == 1){
+                //Destroy List
+                $('#'+configObj.resultsContainerId).remove();
+                //Set Results to Fields
+                setValuesFromResults(configObj.data, configObj.response[0]);
+                //Execute ClickCallback
+                if(configObj.clickCallback){configObj.clickCallback(configObj.response[0]);}
+            }
+            else{
+                this.$resultsList = $('<ul/>').attr('id','resultList');
+                var self = this; // reference to this in current scope
+                //Iterate through row results to retrieve data
+                $.each(configObj.response, function(i,record){
+                    self.$singleResult = $('<li/>').attr('id', 'result');
+                    //Iterate through the configured columns to match with data returned from bridge
+                    $.each(configObj.data, function(attribute, attributeObject){
+                        if (typeof record[attributeObject.name] != "undefined"){
+                            var title ="";
+                            if(attributeObject["title"]){
+                                var $title = $('<div/>').addClass("title " + attributeObject['class']).html(attributeObject["title"]);
+                                self.$singleResult.append($title);
+                            }
+                            if (attributeObject["date"] == true && typeof attributeObject["moment"] != "undefined") {
+                                var attributeValue = moment(record[attributeObject.name]).format(attributeObject["moment"]);
+                            } else {
+                                var $value = $('<div/>').addClass(attributeObject['class']).html(record[attributeObject.name]);
+                                self.$singleResult.append($value); 
+                                self.$singleResult.data(attributeObject.name,record[attributeObject.name])
+                            }
                         }
-                        if (attributeObject["date"] == true && typeof attributeObject["moment"] != "undefined") {
-                            var attributeValue = moment(record[attributeObject.name]).format(attributeObject["moment"]);
-                        } else {
-                            var $value = $('<div/>').addClass(attributeObject['class']).html(record[attributeObject.name]);
-                            self.$singleResult.append($value); 
-                            self.$singleResult.data(attributeObject.name,record[attributeObject.name])
-                        }
+                    });
+                    self.$resultsList.append(self.$singleResult);
+                });
+                $("#"+configObj.resultsContainerId).empty().append(this.$resultsList);
+                $("#"+configObj.resultsContainerId).off().on( "click", 'li', function(event){
+                    setValuesFromResults(configObj.data, $(this).data());
+                    if(configObj.clickCallback){configObj.clickCallback($(this).data());};
+                    if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
+                        $("#"+configObj.resultsContainerId).empty();
                     }
                 });
-                self.$resultsList.append(self.$singleResult);
-            });
-            $("#"+configObj.resultsContainerId).empty().append(this.$resultsList);
-            $("#"+configObj.resultsContainerId).off().on( "click", 'li', function(event){
-                setValuesFromResults(configObj.data, $(this).data());
-                if(configObj.clickCallback){configObj.clickCallback($(this).data());};
-                if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
-                    $("#"+configObj.resultsContainerId).empty();
-                }
-            });
+            }
+            return configObj;
         }
     }   
 })(jQuery);
