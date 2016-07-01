@@ -38,7 +38,7 @@
   "createdAt": "2016-01-07T21:11:05.763Z",
   "createdBy": "brian.peterson@kineticdata.com",
   "description": "KD-Search Development CE",
-  "name": "KD-Search  - Simple Sample",
+  "name": "KD-Search - Simple Sample",
   "notes": "",
   "pages": [
     {
@@ -48,9 +48,11 @@
       "elements": [
         {
           "type": "section",
+          "renderType": null,
           "name": "Requested For",
           "title": null,
           "visible": true,
+          "omitWhenHidden": null,
           "renderAttributes": {
             "class": "section-requested-for"
           },
@@ -74,6 +76,7 @@
               "enabled": true,
               "required": false,
               "requiredMessage": null,
+              "omitWhenHidden": null,
               "pattern": null,
               "constraints": [],
               "events": [],
@@ -100,9 +103,11 @@
         },
         {
           "type": "section",
+          "renderType": null,
           "name": "Requested For Details",
           "title": null,
           "visible": true,
+          "omitWhenHidden": null,
           "renderAttributes": {},
           "elements": [
             {
@@ -116,6 +121,7 @@
               "enabled": true,
               "required": false,
               "requiredMessage": null,
+              "omitWhenHidden": null,
               "pattern": null,
               "constraints": [],
               "events": [],
@@ -135,6 +141,7 @@
               "enabled": true,
               "required": false,
               "requiredMessage": null,
+              "omitWhenHidden": null,
               "pattern": null,
               "constraints": [],
               "events": [
@@ -161,6 +168,7 @@
               "enabled": true,
               "required": false,
               "requiredMessage": null,
+              "omitWhenHidden": null,
               "pattern": null,
               "constraints": [],
               "events": [],
@@ -180,6 +188,7 @@
               "enabled": true,
               "required": false,
               "requiredMessage": null,
+              "omitWhenHidden": null,
               "pattern": null,
               "constraints": [],
               "events": [],
@@ -195,6 +204,7 @@
               "key": "f7",
               "defaultValue": null,
               "defaultResourceName": null,
+              "omitWhenHidden": null,
               "visible": true,
               "enabled": true,
               "required": false,
@@ -216,7 +226,6 @@
           "visible": true,
           "enabled": true,
           "renderType": "submit-page",
-          "events": [],
           "renderAttributes": {}
         }
       ],
@@ -232,6 +241,6 @@
   "status": "New",
   "submissionLabelExpression": "",
   "type": "Service",
-  "updatedAt": "2016-07-01T17:42:12.713Z",
+  "updatedAt": "2016-07-01T19:36:23.195Z",
   "updatedBy": "brian.peterson@kineticdata.com"
 }
