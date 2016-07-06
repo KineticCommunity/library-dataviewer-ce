@@ -1,3 +1,7 @@
+/**TODO
+Change setValuesFromResults to setFieldsfromResults
+
+**/
 /**
 KD-Search CE
 **/
@@ -25,13 +29,13 @@ KD-Search CE
         resultsContainer : '<table cellspacing="0", border="0", class="display">',
         // Properties specific to DataTables
         paging: true,
-            info: true,
-            searching: true,
-            responsive: {
-                details: {
-                    type: 'column',
-                }
-            },
+        info: true,
+        searching: true,
+        responsive: {
+            details: {
+                type: 'column',
+            }
+        },
     };
     
     /* Define default properties for defaultsBridgeList object. */
@@ -41,41 +45,54 @@ KD-Search CE
 
     /**
      * Executes the search for the configured search object.
-     * @param {Obj} Search configuration object.
-     * @param {Obj} Configuration object to over ride first param.
+     * @param {Obj} destination
+     * @param {Obj} Search configuration object
      */
     search.executeSearch = function(destination, configObj) {
         configObj.destination = evaluteObjType(destination);
         if(configObj.before){configObj.before(configObj);};
         //Retrieve and set the Bridge parameter values using JQuery
         var parameters = {};
-        $.each(configObj.resource.parameters, function(i,v){
-            if(typeof v == "function"){
-                parameters[i] = v();
-            }
-            if(typeof v == "string"){
-                parameters[i]=$(configObj.resource.parameters[i]).val();
-            }
-        }); 
+        if(configObj.resource.parameters){
+            $.each(configObj.resource.parameters, function(i,v){
+                if(typeof v == "function"){
+                    parameters[i] = v();
+                }
+                else if(typeof v == "string"){
+                    parameters[i]=$(configObj.resource.parameters[i]).val();
+                }
+            });
+        } 
         K('bridgedResource['+configObj.resource.name+']').load({
             attributes: configObj.resource.attributes, 
             values: parameters,
             success: function(response) {
-                configObj.response = response;
+                // If Bridge is a "Single" convert it to array to match format of "multiple"
+                if(K('bridgedResource['+configObj.resource.name+']').type == "Single"){
+                    configObj.response=[response];
+                }
+                else{
+                    configObj.response = response;
+                }
+                // If any results or successEmpty is not defined
                 if($(configObj.response).size() > 0 || !configObj.successEmpty){
-                    // Execute success callback
+                    // Execute success callback if defined
                     if(configObj.success){configObj.success(configObj);} 
-                        // Render Results
-                        configObj = configObj.renderer.type(destination, configObj)
+                    // Render Results
+                    configObj = configObj.renderer.type(destination, configObj)
                 }
                 // No records returned
                 else{
+                    // Execute successEmpty callback if defined
                     if(configObj.successEmpty){configObj.successEmpty(configObj);}
                 }
+                // Execute complete callback if defined
                 if(configObj.complete){configObj.complete(configObj);}
             },
             error: function(response) {
+                // Execute error callback if defined
                 if(configObj.error){configObj.error(configObj);}
+                // Execute complete callback if defined
                 if(configObj.complete){configObj.complete(configObj);}
             },
         });
@@ -211,12 +228,14 @@ KD-Search CE
                 });
             }
             if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.data).size() == 1){
-                //Destroy Table
-                $('#'+configObj.resultsContainerId).DataTable().destroy([true])
+                // If it exists destroy DataTable
+                if (  $.fn.DataTable.isDataTable( '#'+configObj.resultsContainerId ) ) {
+                    $('#'+configObj.resultsContainerId).DataTable().destroy([true]);
+                }
                 //Set Results to Fields
                 setValuesFromResults(configObj.columns, configObj.data[0]);
                 //Execute ClickCallback
-                if(configObj.clickCallback){configObj.clickCallback(configObj.response[0]);}
+                if(configObj.clickCallback){configObj.clickCallback(configObj.data[0]);}
             }
             else{
                 // Set property to destroy any DataTable which may already exist.
@@ -246,7 +265,7 @@ KD-Search CE
             // Create a results element for Datatables and add to DOM
             configObj.destination=destination;
             obj=initializeResultsContainer(configObj);
-                if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).size() == 1){
+            if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).size() == 1){
                 //Destroy List
                 $('#'+configObj.resultsContainerId).remove();
                 //Set Results to Fields
