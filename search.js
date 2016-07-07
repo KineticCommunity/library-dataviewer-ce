@@ -79,7 +79,7 @@ KD-Search CE
                     // Execute success callback if defined
                     if(configObj.success){configObj.success(configObj);} 
                     // Render Results
-                    configObj = configObj.renderer.type(destination, configObj)
+                    configObj = configObj.renderer.type(destination, configObj);
                 }
                 // No records returned
                 else{
@@ -99,7 +99,27 @@ KD-Search CE
 
     };
        
-    
+    /**
+     * Builds a response obj from Field values and render the results.
+     * @param {Obj} destination
+     * @param {Obj} Search configuration object
+     */
+    search.renderFieldResults = function(destination, configObj) {
+        // Initialize the response if not defined
+        configObj.response = typeof configObj.response=="undefined" ? [] : configObj.response
+        var fieldValueObj = {};
+        // Get Field Values and place into an object
+        $.each(configObj.data, function(i,v){
+            var field = K('field['+v["setField"]+']');
+            if(v["setField"]!="" && typeof v["setField"] != "undefined" && field){
+               fieldValueObj[v["setField"]] = field.value();
+            }
+        })
+        // Add object to the response Array
+        configObj.response.push(fieldValueObj);
+        // Render Results
+        configObj = configObj.renderer.type(destination, configObj);
+    }
     
 
     
