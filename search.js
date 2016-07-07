@@ -104,7 +104,7 @@ KD-Search CE
      * @param {Obj} destination
      * @param {Obj} Search configuration object
      */
-    search.renderFieldResults = function(destination, configObj) {
+    search.renderFieldValues = function(destination, configObj) {
         // Initialize the response if not defined
         configObj.response = typeof configObj.response=="undefined" ? [] : configObj.response
         var fieldValueObj = {};
@@ -121,8 +121,25 @@ KD-Search CE
         configObj = configObj.renderer.type(destination, configObj);
     }
     
-
+    /**
+     * Renders the results fo a Search configuration object.
+     * @param {Obj} destination
+     * @param {Obj} Search configuration object
+     */
+    search.renderResults = function(destination, configObj) {
+        // Render Results
+        configObj = configObj.renderer.type(destination, configObj);
+    }
     
+    /**
+     * Renders the results fo a Search configuration object.
+     * @param {Kientic Field Obj} destination for JSON
+     * @param {Obj} Search configuration object
+     */
+    search.saveJSON = function(destination, configObj) {
+        destination.value(JSON.stringify(configObj.response))
+    }
+
     /****************************************************************************
         PRIVATE HELPERS / SHARED FUNCTIONS                             
     ****************************************************************************/
