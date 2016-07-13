@@ -280,10 +280,10 @@ KD-Search CE
                 configObj.tableObj = $('#'+configObj.resultsContainerId).DataTable( configObj );
                 // Bind Click Event based on where the select attribute extists ie:<tr> or <td>
                 $('#'+configObj.resultsContainerId).off().on( "click", 'td', function(event){
-                    // Ensure user has not clicked on an element with control class used by the responsive plugin to expand info
+                    // Ensure user has not clicked on an element with control class (Used by the responsive plugin to expand info)
                     if(!$(this).hasClass('control')){
                         setValuesFromResults(configObj.columns, configObj.tableObj.row().data());
-                        if(configObj.clickCallback){configObj.clickCallback(configObj.tableObj.row().data());}
+                        if(configObj.clickCallback){configObj.clickCallback($(this).closest('tr'), configObj.tableObj.row().data());}
                         if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
                             // Destroy DataTable and empty container in case columns change.
                             configObj.tableObj.destroy();
@@ -338,7 +338,7 @@ KD-Search CE
                 $("#"+configObj.resultsContainerId).empty().append(this.$resultsList);
                 $("#"+configObj.resultsContainerId).off().on( "click", 'li', function(event){
                     setValuesFromResults(configObj.data, $(this).data());
-                    if(configObj.clickCallback){configObj.clickCallback($(this).data());};
+                    if(configObj.clickCallback){configObj.clickCallback($(this), $(this).data());};
                     if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
                         $("#"+configObj.resultsContainerId).empty();
                     }
