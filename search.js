@@ -318,19 +318,26 @@ KD-Search CE
                     self.$singleResult = $('<li/>').attr('id', 'result');
                     //Iterate through the configured columns to match with data returned from bridge
                     $.each(configObj.data, function(attribute, attributeObject){
-                        if (typeof record[attributeObject.name] != "undefined"){
+                        if (typeof record[attributeObject.name] != "undefined" || typeof attributeObject["defaultContent"] != "undefined"){
                             var title ="";
                             if(attributeObject["title"]){
                                 var $title = $('<div/>').addClass("title " + attributeObject['class']).html(attributeObject["title"]);
                                 self.$singleResult.append($title);
                             }
-                            if (attributeObject["date"] == true && typeof attributeObject["moment"] != "undefined") {
-                                var attributeValue = moment(record[attributeObject.name]).format(attributeObject["moment"]);
+							var contentValue = "";
+                            if (typeof attributeObject["defaultContent"] != "undefined") {
+                                contentValue = attributeObject["defaultContent"];
+								self.$singleResult.data(attributeObject.name,attributeObject["defaultContent"]);
                             } else {
-                                var $value = $('<div/>').addClass(attributeObject['class']).html(record[attributeObject.name]);
-                                self.$singleResult.append($value); 
-                                self.$singleResult.data(attributeObject.name,record[attributeObject.name])
+                                contentValue = record[attributeObject.name];
+								self.$singleResult.data(attributeObject.name,record[attributeObject.name]);								
                             }
+							if (typeof attributeObject["render"] != "undefined") {
+								contentValue = attributeObject["render"](contentValue);
+							}
+							var $value = $('<div/>').addClass(attributeObject['class']).html(contentValue);
+							self.$singleResult.append($value); 
+                            
                         }
                     });
                     self.$resultsList.append(self.$singleResult);
