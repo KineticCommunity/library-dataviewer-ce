@@ -353,5 +353,30 @@ KD-Search CE
             }
             return configObj;
         }
-    }   
+    } 
+
+    /****************************************************************************
+                                Render Utilities   
+                            Used to render Data results
+    ****************************************************************************/   
+    
+    search.render={
+        // Render using moment.js
+        moment:   function ( options ) {
+            //Default Options
+            var options = options || {};
+            var from = options.from || '';
+            var to = options.to || 'MMMM Do YYYY, h:mm:ss a'; 
+            var locale = options.locale || 'en';
+
+            return function ( d, type, row ) {
+                var m = window.moment( d, from, locale, true );
+         
+                // Order and type get a number value from Moment, everything else
+                // sees the rendered value
+                return m.format( type === 'sort' || type === 'type' ? 'x' : to );
+            };
+        },
+    }
+      
 })(jQuery);
