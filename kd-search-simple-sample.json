@@ -1,0 +1,246 @@
+{
+  "attributes": [],
+  "bridgedResources": [
+    {
+      "model": "Sample People",
+      "name": "Sample People",
+      "parameters": [
+        {
+          "mapping": "${values('Requested For')}",
+          "name": "First Name"
+        },
+        {
+          "mapping": "${values('Requested For')}",
+          "name": "Last Name"
+        },
+        {
+          "mapping": "${values('Requested For')}",
+          "name": "Full Name"
+        }
+      ],
+      "qualification": "By First Last or Full Name",
+      "status": "Active"
+    },
+    {
+      "model": "Sample People",
+      "name": "Sample People by Id",
+      "parameters": [
+        {
+          "mapping": "${identity('username')}",
+          "name": "Login Id"
+        }
+      ],
+      "qualification": "By Login Id",
+      "status": "Active"
+    }
+  ],
+  "categorizations": [],
+  "createdAt": "2016-01-07T21:11:05.763Z",
+  "createdBy": "brian.peterson@kineticdata.com",
+  "description": "KD-Search Development CE",
+  "name": "KD-Search - Simple Sample",
+  "notes": "",
+  "pages": [
+    {
+      "advanceCondition": null,
+      "displayCondition": null,
+      "displayPage": null,
+      "elements": [
+        {
+          "type": "section",
+          "renderType": null,
+          "name": "Requested For",
+          "title": null,
+          "visible": true,
+          "omitWhenHidden": null,
+          "renderAttributes": {
+            "class": "section-requested-for"
+          },
+          "elements": [
+            {
+              "type": "content",
+              "renderType": "html",
+              "name": "Requested For Header",
+              "text": "<h2 class=\"center-header\">This Request is for</h2>",
+              "visible": true,
+              "renderAttributes": {}
+            },
+            {
+              "type": "field",
+              "name": "Requested For",
+              "label": "Requested For",
+              "key": "f3",
+              "defaultValue": null,
+              "defaultResourceName": null,
+              "visible": true,
+              "enabled": true,
+              "required": false,
+              "requiredMessage": null,
+              "omitWhenHidden": null,
+              "pattern": null,
+              "constraints": [],
+              "events": [],
+              "renderAttributes": {
+                "class": "inline"
+              },
+              "dataType": "string",
+              "renderType": "text",
+              "rows": 1
+            },
+            {
+              "type": "button",
+              "label": "Search",
+              "name": "Search",
+              "visible": true,
+              "enabled": true,
+              "renderType": "custom",
+              "events": [],
+              "renderAttributes": {
+                "class": "inline"
+              }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "renderType": null,
+          "name": "Requested For Details",
+          "title": null,
+          "visible": true,
+          "omitWhenHidden": null,
+          "renderAttributes": {},
+          "elements": [
+            {
+              "type": "field",
+              "name": "First Name",
+              "label": "First Name",
+              "key": "f4",
+              "defaultValue": null,
+              "defaultResourceName": null,
+              "visible": true,
+              "enabled": true,
+              "required": false,
+              "requiredMessage": null,
+              "omitWhenHidden": null,
+              "pattern": null,
+              "constraints": [],
+              "events": [],
+              "renderAttributes": {},
+              "dataType": "string",
+              "renderType": "text",
+              "rows": 1
+            },
+            {
+              "type": "field",
+              "name": "Last Name",
+              "label": "Last Name",
+              "key": "f1",
+              "defaultValue": null,
+              "defaultResourceName": null,
+              "visible": true,
+              "enabled": true,
+              "required": false,
+              "requiredMessage": null,
+              "omitWhenHidden": null,
+              "pattern": null,
+              "constraints": [],
+              "events": [
+                {
+                  "name": "asdf",
+                  "type": "Change",
+                  "action": "Custom",
+                  "code": "console.log('foo');"
+                }
+              ],
+              "renderAttributes": {},
+              "dataType": "string",
+              "renderType": "text",
+              "rows": 1
+            },
+            {
+              "type": "field",
+              "name": "Phone Number",
+              "label": "Phone Number",
+              "key": "f5",
+              "defaultValue": null,
+              "defaultResourceName": null,
+              "visible": true,
+              "enabled": true,
+              "required": false,
+              "requiredMessage": null,
+              "omitWhenHidden": null,
+              "pattern": null,
+              "constraints": [],
+              "events": [],
+              "renderAttributes": {},
+              "dataType": "string",
+              "renderType": "text",
+              "rows": 1
+            },
+            {
+              "type": "field",
+              "name": "Email",
+              "label": "Email",
+              "key": "f6",
+              "defaultValue": null,
+              "defaultResourceName": null,
+              "visible": true,
+              "enabled": true,
+              "required": false,
+              "requiredMessage": null,
+              "omitWhenHidden": null,
+              "pattern": null,
+              "constraints": [],
+              "events": [],
+              "renderAttributes": {},
+              "dataType": "string",
+              "renderType": "text",
+              "rows": 1
+            },
+            {
+              "type": "field",
+              "name": "Login Id",
+              "label": "Login Id",
+              "key": "f7",
+              "defaultValue": null,
+              "defaultResourceName": null,
+              "omitWhenHidden": null,
+              "visible": true,
+              "enabled": true,
+              "required": false,
+              "requiredMessage": null,
+              "pattern": null,
+              "constraints": [],
+              "events": [],
+              "renderAttributes": {},
+              "dataType": "string",
+              "renderType": "text",
+              "rows": 1
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "label": "Submit",
+          "name": "Submit Button",
+          "visible": true,
+          "enabled": true,
+          "renderType": "submit-page",
+          "renderAttributes": {}
+        }
+      ],
+      "events": [],
+      "name": "Page 1",
+      "renderType": "submittable",
+      "type": "page"
+    }
+  ],
+  "secure": true,
+  "securityPolicies": [],
+  "slug": "kd-search-simple-sample",
+  "status": "New",
+  "submissionLabelExpression": "",
+  "type": "Service",
+  "updatedAt": "2016-07-01T19:36:23.195Z",
+  "updatedBy": "brian.peterson@kineticdata.com"
+}
