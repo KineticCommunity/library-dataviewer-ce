@@ -3,13 +3,12 @@ Change setValuesFromResults to setFieldsfromResults
 
 **/
 /**
-KD-Search CE
+Data Viewer CE
 **/
 (function($){
-    // create the KDSearch global object
-    KDSearch = typeof KDSearch == "undefined" ? {} : KDSearch;
-    // Create a scoped alias to simplify references
-    var search = KDSearch;
+    // create the dataViewer global object
+    DataViewer = typeof DataViewer == "undefined" ? {} : DataViewer;
+
     /**
      * Code in kd_client.js is preventing the backspace from working on $('.dataTables_filter input'). stopPropigation allows backspace to work.  
      */
@@ -48,7 +47,7 @@ KD-Search CE
      * @param {Obj} destination
      * @param {Obj} Search configuration object
      */
-    search.executeSearch = function(destination, configObj) {
+    DataViewer.executeSearch = function(destination, configObj) {
         configObj.destination = evaluteObjType(destination);
         if(configObj.before){configObj.before(configObj);};
         //Retrieve and set the Bridge parameter values using JQuery
@@ -104,7 +103,7 @@ KD-Search CE
      * @param {Obj} destination
      * @param {Obj} Search configuration object
      */
-    search.renderFieldValues = function(destination, configObj) {
+    DataViewer.renderFieldValues = function(destination, configObj) {
         // Initialize the response if not defined
         configObj.response = typeof configObj.response=="undefined" ? [] : configObj.response
         var fieldValueObj = {};
@@ -126,18 +125,9 @@ KD-Search CE
      * @param {Obj} destination
      * @param {Obj} Search configuration object
      */
-    search.renderResults = function(destination, configObj) {
+    DataViewer.renderResults = function(destination, configObj) {
         // Render Results
         configObj = configObj.renderer.type(destination, configObj);
-    }
-    
-    /**
-     * Renders the results fo a Search configuration object.
-     * @param {Kientic Field Obj} destination for JSON
-     * @param {Obj} Search configuration object
-     */
-    search.saveJSON = function(destination, configObj) {
-        destination.value(JSON.stringify(configObj.response))
     }
 
     /****************************************************************************
@@ -230,7 +220,7 @@ KD-Search CE
     * Returns string with uppercase first letter
     * @param {String} Value to be give uppercase letter
     */
-    search.ucFirst = function(str){
+    DataViewer.ucFirst = function(str){
         var firstLetter = str.substr(0, 1);
         return firstLetter.toUpperCase() + str.substr(1);
     }
@@ -238,7 +228,7 @@ KD-Search CE
     /****************************************************************************
                                 RENDERERS                               
     ****************************************************************************/
-    search.Renderers={
+    DataViewer.Renderers={
         /**
         * Create a TableTable using a Search Object
         * @param {Object} Search Object used to create the DataTable
@@ -335,7 +325,7 @@ KD-Search CE
 							if (typeof attributeObject["render"] != "undefined") {
 								contentValue = attributeObject["render"](contentValue);
 							}
-							var $value = $('<div/>').addClass(attributeObject['class']).html(contentValue);
+							var $value = $('<div/>').addClass(attributeObject['class']).html(contentValue).data('name', attributeObject["name"]);
 							self.$singleResult.append($value); 
                             
                         }
@@ -360,7 +350,7 @@ KD-Search CE
                             Used to render Data results
     ****************************************************************************/   
     
-    search.render={
+    DataViewer.render={
         // Render using moment.js
         moment:   function ( options ) {
             //Default Options
@@ -379,4 +369,31 @@ KD-Search CE
         },
     }
       
+    /****************************************************************************
+                                 Utilities   
+    ****************************************************************************/   
+    /**
+    * Jquery plugin for Unordered Lists
+    * Creates functionality similar to DataTables plugin.
+    */
+    $.fn.UnorderedList = function(){
+        var self = this;
+            /**
+            * Returns List as JSON obj
+            */
+            var data = function(){
+            var array = [];
+            $(self).find('li').each(function(i,v){
+                 var obj = {};
+                 $(v).find("div:not('.title')").each(function(i,v){
+                    obj[$(v).data('name')]     = $(v).text()
+                 });
+                 array.push(obj);
+            });
+            return array;
+        }
+        return {
+            data: data
+        }
+    };
 })(jQuery);
