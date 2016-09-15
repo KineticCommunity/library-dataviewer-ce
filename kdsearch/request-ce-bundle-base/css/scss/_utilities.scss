@@ -1,0 +1,55 @@
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *   Utilities
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+/* Images
+ *-------------------------------------- */
+
+/* Add this class to an image to make it fit within it's fluid parent wrapper while maintaining aspect ratio. */
+.img-responsive {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Desaturates images to gray that need to be deemphasized */
+img.desaturate{
+  filter: gray; /* For IE6-9 */
+  filter: grayscale(1); /* For Microsoft Edge and Firefox 35+ */
+  -webkit-filter: grayscale(1); /* For Google Chrome, Safari 6+ & Opera 15+ */
+}
+
+/* Twitter
+ *-------------------------------------- */
+#social-column{
+  background-color:#fff;
+  padding:1em;
+  border-top: 0.2rem solid rgba(179, 193, 196, 0.5);
+}
+#twitter-widget-0{
+  opacity: .5;
+}
+#twitter-widget-0:hover{
+  opacity: 1;
+}
+
+/* Sticky Footer
+ *-------------------------------------- */
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 60px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  background-color: #f5f5f5;
+}
+
+
