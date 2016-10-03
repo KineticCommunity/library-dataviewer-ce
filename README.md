@@ -20,3 +20,4 @@ Javascript library used to preform a search functions using a configured bridge
 # How to use
 
 First add an event on load for the page that the search will be used on and call the **loadSearch()**; function.  Additional load events will have to be included to expose the bridge for each qualifiction that will be used.  Custom code to include a search field input and a handle to activate the search will be required.  Configure the searchConfig.js file to work with the bridge and questions on the form.
+And example of calling a DataViewer that executes a search is: DataViewer.executeSearch(function(){ return $(K('section[Requested For]').element());}, searchConfig.personSearchBridgeTable);
