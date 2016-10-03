@@ -272,8 +272,8 @@ Data Viewer CE
                 $('#'+configObj.resultsContainerId).off().on( "click", 'td', function(event){
                     // Ensure user has not clicked on an element with control class (Used by the responsive plugin to expand info)
                     if(!$(this).hasClass('control')){
-                        setValuesFromResults(configObj.columns, configObj.tableObj.row().data());
-                        if(configObj.clickCallback){configObj.clickCallback($(this).closest('tr'), configObj.tableObj.row().data());}
+                        setValuesFromResults(configObj.columns, configObj.tableObj.row(this).data());
+                        if(configObj.clickCallback){configObj.clickCallback($(this).closest('tr'), configObj.tableObj.row(this).data());}
                         if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
                             // Destroy DataTable and empty container in case columns change.
                             configObj.tableObj.destroy();
