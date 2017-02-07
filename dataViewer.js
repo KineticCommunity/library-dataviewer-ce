@@ -67,7 +67,7 @@ Data Viewer CE
             values: parameters,
             success: function(response) {
                 // If Bridge is a "Single" convert it to array to match format of "multiple"
-                if(K('bridgedResource['+configObj.resource.name+']').type == "Single"){
+                if(K('bridgedResource['+configObj.resource.name+']').type() == "Single"){
                     configObj.response=[response];
                 }
                 else{
@@ -264,7 +264,7 @@ Data Viewer CE
                 if(configObj.clickCallback){configObj.clickCallback(configObj.data[0]);}
             }
             else{
-                // Set property to destroy any DataTable which may already exist.
+                 // Set property to destroy any DataTable which may already exist.
                 configObj.destroy = true;
                 configObj.tableObj = $('#'+configObj.resultsContainerId).DataTable( configObj );
                 // Bind Click Event based on where the select attribute extists ie:<tr> or <td>
