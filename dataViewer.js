@@ -67,7 +67,7 @@ Data Viewer CE
             values: parameters,
             success: function(response) {
                 // If Bridge is a "Single" convert it to array to match format of "multiple"
-                if(K('bridgedResource['+configObj.resource.name+']').type == "Single"){
+                if(K('bridgedResource['+configObj.resource.name+']').type() == "Single"){
                     configObj.response=[response];
                 }
                 else{
@@ -143,8 +143,7 @@ Data Viewer CE
         $.each(configData, function( k, v){
             var field = K('field['+v["setField"]+']');
             if(v["setField"]!="" && typeof v["setField"] != "undefined" && field){
-                // Used with old configuration field.value(results[k]);
-                field.value(results[v["setField"]]);
+                field.value(results[v.name]);
             }
             // If callback property exists
             if(v.callback){v.callback(results[k]);}
@@ -265,15 +264,15 @@ Data Viewer CE
                 if(configObj.clickCallback){configObj.clickCallback(configObj.data[0]);}
             }
             else{
-                // Set property to destroy any DataTable which may already exist.
+                 // Set property to destroy any DataTable which may already exist.
                 configObj.destroy = true;
                 configObj.tableObj = $('#'+configObj.resultsContainerId).DataTable( configObj );
                 // Bind Click Event based on where the select attribute extists ie:<tr> or <td>
                 $('#'+configObj.resultsContainerId).off().on( "click", 'td', function(event){
                     // Ensure user has not clicked on an element with control class (Used by the responsive plugin to expand info)
                     if(!$(this).hasClass('control')){
-                        setValuesFromResults(configObj.columns, configObj.tableObj.row().data());
-                        if(configObj.clickCallback){configObj.clickCallback($(this).closest('tr'), configObj.tableObj.row().data());}
+                        setValuesFromResults(configObj.columns, configObj.tableObj.row($(this).closest('tr')).data());
+                        if(configObj.clickCallback){configObj.clickCallback($(this).closest('tr'), configObj.tableObj.row($(this).closest('tr')).data());}
                         if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
                             // Destroy DataTable and empty container in case columns change.
                             configObj.tableObj.destroy();

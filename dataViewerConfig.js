@@ -82,7 +82,7 @@ searchConfig ={
         processSingleResult: true,
         renderer: {
             /*type: KDSearch.Renderers.UnorderedList,*/
-            type: KDSearch.Renderers.DataTables, // Passing a function here allows for better customization
+            type: DataViewer.Renderers.DataTables, // Passing a function here allows for better customization
             options: {
                 // DataTable OPTIONS; Passing options here make it clear that they are being passed to data tables
                 // responsive: OPTIONAL Default for "BridgeDataTable" is true but can be over written.
