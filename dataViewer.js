@@ -74,7 +74,7 @@ Data Viewer CE
                     configObj.response = response;
                 }
                 // If any results or successEmpty is not defined
-                if($(configObj.response).size() > 0 || !configObj.successEmpty){
+                if('response!==null && $(configObj.response).size() > 0 || !configObj.successEmpty){
                     // Execute success callback if defined
                     if(configObj.success){configObj.success(configObj);} 
                     // Render Results
