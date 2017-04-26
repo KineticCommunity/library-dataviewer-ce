@@ -333,11 +333,14 @@ Data Viewer CE
                     self.$resultsList.append(self.$singleResult);
                 });
                 $("#"+configObj.resultsContainerId).empty().append(this.$resultsList);
-                $("#"+configObj.resultsContainerId).off().on( "click", 'li', function(event){
-                    setValuesFromResults(configObj.data, $(this).data());
-                    if(configObj.clickCallback){configObj.clickCallback($(this), $(this).data());};
-                    if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
-                        $("#"+configObj.resultsContainerId).empty();
+                $("#"+configObj.resultsContainerId).off().on( "click", 'li div', function(event){
+                    // Ensure user has not clicked on an element with control class (Used to allow checkbox and button elements to be clicked)
+                    if(!$(this).hasClass('control')){
+                        setValuesFromResults(configObj.data, $(this).parent('li').data());
+                        if(configObj.clickCallback){configObj.clickCallback($(this), $(this).parent('li').data());};
+                        if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
+                            $("#"+configObj.resultsContainerId).empty();
+                        }
                     }
                 });
             }
