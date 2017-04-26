@@ -322,7 +322,8 @@ Data Viewer CE
 								self.$singleResult.data(attributeObject.name,record[attributeObject.name]);								
                             }
 							if (typeof attributeObject["render"] != "undefined") {
-								contentValue = attributeObject["render"](contentValue);
+								contentValue = attributeObject["render"](contentValue, 'display', record);
+
 							}
 							var $value = $('<div/>').addClass(attributeObject['class']).html(contentValue).data('name', attributeObject["name"]);
 							self.$singleResult.append($value); 
