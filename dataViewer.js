@@ -261,7 +261,7 @@ Data Viewer CE
                 //Set Results to Fields
                 setValuesFromResults(configObj.columns, configObj.data[0]);
                 //Execute ClickCallback
-                if(configObj.clickCallback){configObj.clickCallback(configObj.data[0]);}
+                if(configObj.clickCallback){configObj.clickCallback(null, configObj.data[0]);}
             }
             else{
                  // Set property to destroy any DataTable which may already exist.
@@ -297,7 +297,7 @@ Data Viewer CE
                 //Set Results to Fields
                 setValuesFromResults(configObj.data, configObj.response[0]);
                 //Execute ClickCallback
-                if(configObj.clickCallback){configObj.clickCallback(configObj.response[0]);}
+                if(configObj.clickCallback){configObj.clickCallback(null, configObj.response[0]);}
             }
             else{
                 this.$resultsList = $('<ul/>').attr('id','resultList');
@@ -322,7 +322,8 @@ Data Viewer CE
 								self.$singleResult.data(attributeObject.name,record[attributeObject.name]);								
                             }
 							if (typeof attributeObject["render"] != "undefined") {
-								contentValue = attributeObject["render"](contentValue);
+								contentValue = attributeObject["render"](contentValue, 'display', record);
+
 							}
 							var $value = $('<div/>').addClass(attributeObject['class']).html(contentValue).data('name', attributeObject["name"]);
 							self.$singleResult.append($value); 
