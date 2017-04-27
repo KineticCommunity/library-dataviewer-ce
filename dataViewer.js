@@ -304,7 +304,8 @@ Data Viewer CE
                 var self = this; // reference to this in current scope
                 //Iterate through row results to retrieve data
                 $.each(configObj.response, function(i,record){
-                    self.$singleResult = $('<li/>').attr('id', 'result');
+                    var odd_or_even = i % 2 == 0 ? 'even' : 'odd';
+                    self.$singleResult = $('<li/>').attr('class', 'result ' + odd_or_even);
                     //Iterate through the configured columns to match with data returned from bridge
                     $.each(configObj.data, function(attribute, attributeObject){
                         if (typeof record[attributeObject.name] != "undefined" || typeof attributeObject["defaultContent"] != "undefined"){
