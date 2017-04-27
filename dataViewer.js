@@ -338,7 +338,7 @@ Data Viewer CE
                     // Ensure user has not clicked on an element with control class (Used to allow checkbox and button elements to be clicked)
                     if(!$(this).hasClass('control')){
                         setValuesFromResults(configObj.data, $(this).parent('li').data());
-                        if(configObj.clickCallback){configObj.clickCallback($(this), $(this).parent('li').data());};
+                        if(configObj.clickCallback){configObj.clickCallback($(this).parent('li'), $(this).parent('li').data());};
                         if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
                             $("#"+configObj.resultsContainerId).empty();
                         }
