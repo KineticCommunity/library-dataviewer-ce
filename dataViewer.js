@@ -1,16 +1,16 @@
 /**TODO
-Change setValuesFromResults to setFieldsfromResults
 
 **/
 /**
 Data Viewer CE
+2017-5-1: Updated to work with use in a Sub Form.
 **/
 (function($){
     // create the dataViewer global object
     DataViewer = typeof DataViewer == "undefined" ? {} : DataViewer;
 
     /**
-     * Code in kd_client.js is preventing the backspace from working on $('.dataTables_filter input'). stopPropigation allows backspace to work.  
+     * Code in kd_client.js is preventing the backspace from working on $('.dataTables_filter input'). stopPropigation allows backspace to work.
      */
     $('body').on('keydown', '.dataTables_filter input', function( event ) {
       event.stopPropagation();
@@ -18,7 +18,7 @@ Data Viewer CE
 
     /**
      * Define default properties for the Search configurations
-     * Reduces need to include all properties in a search configuration.  
+     * Reduces need to include all properties in a search configuration.
      * Each Search config my overide these values by including a value of its own.
      * execute: {Function} Function which will execute the search
      * Other properties are used by Datatables.net or its Responsive Plugin.
@@ -36,7 +36,7 @@ Data Viewer CE
             }
         },
     };
-    
+
     /* Define default properties for defaultsBridgeList object. */
     var defaultsBridgeList = {
         resultsContainer : '<div>',
@@ -48,7 +48,8 @@ Data Viewer CE
      * @param {Obj} Search configuration object
      */
     DataViewer.executeSearch = function(destination, configObj) {
-        configObj.destination = evaluteObjType(destination);
+        //Determine current and Parent form
+        setParentChildForms(destination, configObj);
         if(configObj.before){configObj.before(configObj);};
         //Retrieve and set the Bridge parameter values using JQuery
         var parameters = {};
@@ -61,22 +62,22 @@ Data Viewer CE
                     parameters[i]=$(configObj.resource.parameters[i]).val();
                 }
             });
-        } 
-        K('bridgedResource['+configObj.resource.name+']').load({
-            attributes: configObj.resource.attributes, 
+        }
+        configObj.forms.self('bridgedResource['+configObj.resource.name+']').load({
+            attributes: configObj.resource.attributes,
             values: parameters,
             success: function(response) {
                 // If Bridge is a "Single" convert it to array to match format of "multiple"
-                if(K('bridgedResource['+configObj.resource.name+']').type() == "Single"){
+                if(configObj.forms.self('bridgedResource['+configObj.resource.name+']').type == "Single"){
                     configObj.response=[response];
                 }
                 else{
                     configObj.response = response;
                 }
                 // If any results or successEmpty is not defined
-                if(response!==null && $(configObj.response).size() > 0 || !configObj.successEmpty){
+                if($(configObj.response).size() > 0 || !configObj.successEmpty){
                     // Execute success callback if defined
-                    if(configObj.success){configObj.success(configObj);} 
+                    if(configObj.success){configObj.success(configObj);}
                     // Render Results
                     configObj = configObj.renderer.type(destination, configObj);
                 }
@@ -97,41 +98,59 @@ Data Viewer CE
         });
 
     };
-       
+
     /**
-     * Builds a response obj from Field values and render the results.
+     * Builds a response obj from Field values on the form and render the results.
+     * In the "data" array of the configObj the "setField" property is used to map the source field on the Form
+     *  to the table or list.
      * @param {Obj} destination
      * @param {Obj} Search configuration object
      */
     DataViewer.renderFieldValues = function(destination, configObj) {
+        // Initialize the forms obj 
+        setParentChildForms(destination, configObj);
         // Initialize the response if not defined
         configObj.response = typeof configObj.response=="undefined" ? [] : configObj.response
         var fieldValueObj = {};
         // Get Field Values and place into an object
         $.each(configObj.data, function(i,v){
-            var field = K('field['+v["setField"]+']');
-            if(v["setField"]!="" && typeof v["setField"] != "undefined" && field){
-               fieldValueObj[v["setField"]] = field.value();
-            }
+           if(v["setField"]!="" && typeof v["setField"] != "undefined"){
+                // Set field string (e.g.: "field[First Name]")
+                var field = 'field['+v["setField"]+']';
+                // Check if field exist on self then parent. If neither set to empty.
+                if(configObj.forms.self(field) !=null){
+                    var value = configObj.forms.self(field).value();
+                }
+                else if(configObj.forms.parent(field) !=null){
+                   var value = configObj.forms.parent(field).value();
+                }
+                else{var value =  '';}
+                // Set value into the feidlValueObj
+                fieldValueObj[v["name"]] = value;
+            }            
         })
         // Add object to the response Array
         configObj.response.push(fieldValueObj);
+        // The processSingleResult property should not be set to true when using renderFieldValues.
+        configObj.renderer.options.processSingleResult = false;
         // Render Results
         configObj = configObj.renderer.type(destination, configObj);
     }
-    
+
     /**
      * Renders the results fo a Search configuration object.
      * @param {Obj} destination
      * @param {Obj} Search configuration object
      */
     DataViewer.renderResults = function(destination, configObj) {
+        // Initialize the forms obj 
+        setParentChildForms(destination, configObj);
         // Render Results
         configObj = configObj.renderer.type(destination, configObj);
     }
 
     /****************************************************************************
-        PRIVATE HELPERS / SHARED FUNCTIONS                             
+        PRIVATE HELPERS / SHARED FUNCTIONS
     ****************************************************************************/
 
     /**
@@ -139,19 +158,27 @@ Data Viewer CE
     * @params {Object} data config object
     * @params {Object} data returned from selection.
     */
-    function setValuesFromResults(configData, results){ //rowCallback
-        $.each(configData, function( k, v){
-            var field = K('field['+v["setField"]+']');
-            if(v["setField"]!="" && typeof v["setField"] != "undefined" && field){
-                field.value(results[v.name]);
+    function setFieldsfromResults(configData, results, configObj){ //rowCallback
+        var self = this;
+        self.configObj = configObj;
+        //Iterate through the data object defined in the configuration
+        $.each(configData, function( k_data, v_data){
+            if(v_data["setField"]!="" && typeof v_data["setField"] != "undefined"){
+                // Set field string (e.g.: "field[First Name]")
+                var field = 'field['+v_data["setField"]+']';
+                //Iterate through each of the defined forms (ie: self and parent)
+                $.each(self.configObj.forms, function(k_form,v_form){
+                    // Set field value if it exists for self and parent
+                    if( v_form(field)!==null) v_form(field).value(results[v_data["setField"]]);  
+                })
             }
             // If callback property exists
-            if(v.callback){v.callback(results[k]);}
+            if(v_data.callback){v_data.callback(results[k_data]);}
         });
     }
 
     /**
-     * Returns object 
+     * Returns object
      * @param {Object} table
      */
     function evaluteObjType(obj){
@@ -172,29 +199,29 @@ Data Viewer CE
      * Returns Search Object
      * Creates resultsContainer and adds it to DOM based on Search Config
      * @param {Object} Search Object
-     */ 
-    function initializeResultsContainer(obj){
-        if($("#"+obj.resultsContainerId).length == 0){
+     */
+    function initializeResultsContainer(configObj){
+        if($(configObj.forms.self('form').element()).find("#"+configObj.resultsContainerId).length == 0){
             // Create resultsContainer
-            if(typeof obj.resultsContainer == "string"){ // if string
-                obj.resultsContainer = $(obj.resultsContainer).attr('id',obj.resultsContainerId);
+            if(typeof configObj.resultsContainer == "string"){ // if string
+                configObj.resultsContainer = $(configObj.resultsContainer).attr('id',configObj.resultsContainerId);
             }
-            else if(typeof obj.resultsContainer == "function"){ // if function
-                obj.resultsContainer = obj.resultsContainer().attr('id',obj.resultsContainerId);
+            else if(typeof configObj.resultsContainer == "function"){ // if function
+                configObj.resultsContainer = configObj.resultsContainer().attr('id',configObj.resultsContainerId);
             }
             // Append to DOM
-            if(obj.destination instanceof $){ // if jQuery Obj
-                obj.destination.append(obj.resultsContainer);
+            if(configObj.destination instanceof $){ // if jQuery configObj
+                configObj.destination.append(configObj.resultsContainer);
             }
-            else if(typeof obj.destination == "string"){ // if string
-                obj.destination = $(obj.destination).append(obj.resultsContainer);
+            else if(typeof configObj.destination == "string"){ // if string
+                configObj.destination = $(configObj.destination).append(configObj.resultsContainer);
             }
-            else if(typeof obj.destination == "function"){ // if function
-                obj.destination = obj.destination().append(obj.resultsContainer);
+            else if(typeof configObj.destination == "function"){ // if function
+                configObj.destination = configObj.destination().append(configObj.resultsContainer);
             }
-            return obj;
+            return configObj;
         }
-        return obj;
+        return configObj;
     }
 
     /**
@@ -209,12 +236,26 @@ Data Viewer CE
         });
     }
 
+    /**
+    * Set the Parent form and Current form for when DataViewer is used as a SubForm
+    * @param {Object} Config Obj
+    */
+    function setParentChildForms(destination, configObj){
+        configObj.destination = evaluteObjType(destination);
+        configObj.forms= {};
+        var currentFormId = $(configObj.destination).closest("form[data-form]").attr('id');
+        var currentForm = K.as(Kinetic.forms[currentFormId]);
+        configObj.forms.self = currentForm;
+        configObj.forms.parent = K;
+        // Create an alias for self which is easier syntax to reference in the callbacks
+        Subform = configObj.forms.self;
+    }
 
-    
+
     /****************************************************************************
-                                PUBlIC FUNCTIONS                               
+                                PUBlIC FUNCTIONS
     ****************************************************************************/
-    
+
     /**
     * Returns string with uppercase first letter
     * @param {String} Value to be give uppercase letter
@@ -225,7 +266,7 @@ Data Viewer CE
     }
 
     /****************************************************************************
-                                RENDERERS                               
+                                RENDERERS
     ****************************************************************************/
     DataViewer.Renderers={
         /**
@@ -234,11 +275,10 @@ Data Viewer CE
         */
         DataTables:  function(destination, configObj){
             // Entend defaults into the configuration
-            configObj=$.extend( {}, defaultsBridgeDataTable, configObj );  
+            configObj=$.extend( {}, defaultsBridgeDataTable, configObj );
             // Merge Render options into Config Obj
             configObj=$.extend( true, {}, configObj, configObj.renderer.options );
             // Create a table element for Datatables and add to DOM
-            configObj.destination=destination;
             configObj=initializeResultsContainer(configObj);
             // Set columns, need by DataTables
             convertDataToColumns(configObj);
@@ -253,30 +293,43 @@ Data Viewer CE
                     orderable: false,
                 });
             }
+            // For when DataViewer is used in a Subform. "$(configObj.forms.self('form').element()).find("#"+configObj.resultsContainerId)" finds only children of the current form.  
+            var tableContainer = $(configObj.forms.self('form').element()).find('#'+configObj.resultsContainerId);
             if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.data).size() == 1){
-                // If it exists destroy DataTable
-                if (  $.fn.DataTable.isDataTable( '#'+configObj.resultsContainerId ) ) {
-                    $('#'+configObj.resultsContainerId).DataTable().destroy([true]);
+                // If it exists destroy DataTable and remove from view.
+                if (  $.fn.DataTable.isDataTable( tableContainer ) ){
+                    tableContainer.DataTable().destroy([true]);
                 }
                 //Set Results to Fields
-                setValuesFromResults(configObj.columns, configObj.data[0]);
+                setFieldsfromResults(configObj.columns, configObj.data[0], configObj);
                 //Execute ClickCallback
-                if(configObj.clickCallback){configObj.clickCallback(null, configObj.data[0]);}
+                try {
+                    if(configObj.clickCallback){configObj.clickCallback(null, configObj.data[0]);}
+                }
+                catch (e) {
+                   alert("Error in clickCallback:\n"+e);
+                }
+
             }
             else{
-                 // Set property to destroy any DataTable which may already exist.
+                // Set property to destroy any DataTable which may already exist.
                 configObj.destroy = true;
-                configObj.tableObj = $('#'+configObj.resultsContainerId).DataTable( configObj );
+                configObj.tableObj = tableContainer.DataTable( configObj );
                 // Bind Click Event based on where the select attribute extists ie:<tr> or <td>
-                $('#'+configObj.resultsContainerId).off().on( "click", 'td', function(event){
-                    // Ensure user has not clicked on an element with control class (Used by the responsive plugin to expand info)
+                tableContainer.off().on( "click", 'td', function(event){
+                    // Ensure user has not clicked on an element with control class (Used by the responsive plugin to expand info and allow checkbox and button elements to be clicked)
                     if(!$(this).hasClass('control')){
-                        setValuesFromResults(configObj.columns, configObj.tableObj.row($(this).closest('tr')).data());
-                        if(configObj.clickCallback){configObj.clickCallback($(this).closest('tr'), configObj.tableObj.row($(this).closest('tr')).data());}
+                        setFieldsfromResults(configObj.columns, configObj.tableObj.row($(this).closest('tr')).data(), configObj);
+                        try {
+                            if(configObj.clickCallback){configObj.clickCallback($(this).closest('tr'), configObj.tableObj.row($(this).closest('tr')).data(), configObj);}
+                        }
+                        catch (e) {
+                           alert("Error in clickCallback:\n"+e);
+                        }
                         if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
                             // Destroy DataTable and empty container in case columns change.
                             configObj.tableObj.destroy();
-                            $('#'+configObj.resultsContainerId).empty();
+                            tableContainer.empty();
                         }
                     }
                 });
@@ -289,15 +342,19 @@ Data Viewer CE
             // Merge Render options into Config Obj
             configObj=$.extend( true, {}, configObj, configObj.renderer.options );
             // Create a results element for Datatables and add to DOM
-            configObj.destination=destination;
-            obj=initializeResultsContainer(configObj);
+            configObj=initializeResultsContainer(configObj);
             if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).size() == 1){
                 //Destroy List
-                $('#'+configObj.resultsContainerId).remove();
+                $(configObj.forms.self('form').element()).find("#"+configObj.resultsContainerId).remove();
                 //Set Results to Fields
-                setValuesFromResults(configObj.data, configObj.response[0]);
+                setFieldsfromResults(configObj.data, configObj.response[0], configObj);
                 //Execute ClickCallback
-                if(configObj.clickCallback){configObj.clickCallback(null, configObj.response[0]);}
+                try {
+                    if(configObj.clickCallback){configObj.clickCallback(null, configObj.response[0]);}
+                }
+                catch (e) {
+                   alert("Error in clickCallback:\n"+e);
+                }
             }
             else{
                 this.$resultsList = $('<ul/>').attr('id','resultList');
@@ -320,62 +377,67 @@ Data Viewer CE
 								self.$singleResult.data(attributeObject.name,attributeObject["defaultContent"]);
                             } else {
                                 contentValue = record[attributeObject.name];
-								self.$singleResult.data(attributeObject.name,record[attributeObject.name]);								
+								self.$singleResult.data(attributeObject.name,record[attributeObject.name]);
                             }
 							if (typeof attributeObject["render"] != "undefined") {
 								contentValue = attributeObject["render"](contentValue, 'display', record);
-
 							}
 							var $value = $('<div/>').addClass(attributeObject['class']).html(contentValue).data('name', attributeObject["name"]);
-							self.$singleResult.append($value); 
-                            
+							self.$singleResult.append($value);
+
                         }
                     });
                     self.$resultsList.append(self.$singleResult);
                 });
-                $("#"+configObj.resultsContainerId).empty().append(this.$resultsList);
-                $("#"+configObj.resultsContainerId).off().on( "click", 'li div', function(event){
+                // For when DataViewer is used in a Subform. "$(configObj.forms.self('form').element()).find("#"+configObj.resultsContainerId)" finds only children of the current form.  
+                $(configObj.forms.self('form').element()).find("#"+configObj.resultsContainerId).empty().append(this.$resultsList);
+                $(configObj.forms.self('form').element()).find("#"+configObj.resultsContainerId).off().on( "click", 'li div', function(event){
                     // Ensure user has not clicked on an element with control class (Used to allow checkbox and button elements to be clicked)
                     if(!$(this).hasClass('control')){
-                        setValuesFromResults(configObj.data, $(this).parent('li').data());
-                        if(configObj.clickCallback){configObj.clickCallback($(this).parent('li'), $(this).parent('li').data());};
+                        setFieldsfromResults(configObj.data, $(this).parent('li').data(), configObj);
+                        try {
+                            if(configObj.clickCallback){configObj.clickCallback($(this).parent('li'), $(this).parent('li').data());};
+                        }
+                        catch (e) {
+                           alert("Error in clickCallback:\n"+e);
+                        }
                         if(configObj.removeOnClick || typeof configObj.removeOnClick == "undefined"){
-                            $("#"+configObj.resultsContainerId).empty();
+                            $(configObj.forms.self('form').element()).find("#"+configObj.resultsContainerId).empty();
                         }
                     }
                 });
             }
             return configObj;
         }
-    } 
+    }
 
     /****************************************************************************
-                                Render Utilities   
+                                Render Utilities
                             Used to render Data results
-    ****************************************************************************/   
-    
+    ****************************************************************************/
+
     DataViewer.render={
         // Render using moment.js
         moment:   function ( options ) {
             //Default Options
             var options = options || {};
             var from = options.from || '';
-            var to = options.to || 'MMMM Do YYYY, h:mm:ss a'; 
+            var to = options.to || 'MMMM Do YYYY, h:mm:ss a';
             var locale = options.locale || 'en';
 
             return function ( d, type, row ) {
                 var m = window.moment( d, from, locale, true );
-         
+
                 // Order and type get a number value from Moment, everything else
                 // sees the rendered value
                 return m.format( type === 'sort' || type === 'type' ? 'x' : to );
             };
         },
     }
-      
+
     /****************************************************************************
-                                 Utilities   
-    ****************************************************************************/   
+                                 Utilities
+    ****************************************************************************/
     /**
     * Jquery plugin for Unordered Lists
     * Creates functionality similar to DataTables plugin.
