@@ -3,7 +3,7 @@
 **/
 /**
 Data Viewer CE
-2017-5-1: Updated to work with use in a Sub Form.
+2017-5-4: Updated to work with use in a Sub Form.
 **/
 (function($){
     // create the dataViewer global object
@@ -127,6 +127,7 @@ Data Viewer CE
                 else{var value =  '';}
                 // Set value into the feidlValueObj
                 fieldValueObj[v["name"]] = value;
+//Remove                v.name=v['name'];
             }            
         })
         // Add object to the response Array
@@ -143,8 +144,11 @@ Data Viewer CE
      * @param {Obj} Search configuration object
      */
     DataViewer.renderResults = function(destination, configObj) {
+debugger;
         // Initialize the forms obj 
         setParentChildForms(destination, configObj);
+        // The processSingleResult property should not be set to true when using renderFieldValues.
+        configObj.renderer.options.processSingleResult = false;
         // Render Results
         configObj = configObj.renderer.type(destination, configObj);
     }
@@ -169,7 +173,7 @@ Data Viewer CE
                 //Iterate through each of the defined forms (ie: self and parent)
                 $.each(self.configObj.forms, function(k_form,v_form){
                     // Set field value if it exists for self and parent
-                    if( v_form(field)!==null) v_form(field).value(results[v_data["setField"]]);  
+                    if( v_form(field)!==null) v_form(field).value(results[v_data["name"]]);  
                 })
             }
             // If callback property exists
