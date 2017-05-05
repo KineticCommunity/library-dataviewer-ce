@@ -127,7 +127,6 @@ Data Viewer CE
                 else{var value =  '';}
                 // Set value into the feidlValueObj
                 fieldValueObj[v["name"]] = value;
-//Remove                v.name=v['name'];
             }            
         })
         // Add object to the response Array
@@ -144,7 +143,6 @@ Data Viewer CE
      * @param {Obj} Search configuration object
      */
     DataViewer.renderResults = function(destination, configObj) {
-debugger;
         // Initialize the forms obj 
         setParentChildForms(destination, configObj);
         // The processSingleResult property should not be set to true when using renderFieldValues.
