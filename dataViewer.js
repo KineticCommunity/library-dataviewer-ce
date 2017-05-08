@@ -3,7 +3,7 @@
 **/
 /**
 Data Viewer CE
-2017-5-4: Updated to work with use in a Sub Form.
+2017-5-8: Included use of before and complete callbacks in renderFieldValues().
 **/
 (function($){
     // create the dataViewer global object
@@ -110,7 +110,12 @@ Data Viewer CE
         // Initialize the forms obj 
         setParentChildForms(destination, configObj);
         // Initialize the response if not defined
-        configObj.response = typeof configObj.response=="undefined" ? [] : configObj.response
+        configObj.response = typeof configObj.response=="undefined" ? [] : configObj.response;
+        // The processSingleResult property should not be set to true when using renderFieldValues.
+        configObj.renderer.options.processSingleResult = false;
+        // The removeOnClick property should not be set to true when using renderFieldValues.
+        configObj.removeOnClick = false;
+        if(configObj.before){configObj.before(configObj);};
         var fieldValueObj = {};
         // Get Field Values and place into an object
         $.each(configObj.data, function(i,v){
@@ -131,10 +136,9 @@ Data Viewer CE
         })
         // Add object to the response Array
         configObj.response.push(fieldValueObj);
-        // The processSingleResult property should not be set to true when using renderFieldValues.
-        configObj.renderer.options.processSingleResult = false;
         // Render Results
         configObj = configObj.renderer.type(destination, configObj);
+        if(configObj.complete){configObj.complete(configObj);};
     }
 
     /**
@@ -373,19 +377,19 @@ Data Viewer CE
                                 var $title = $('<div/>').addClass("title " + attributeObject['class']).html(attributeObject["title"]);
                                 self.$singleResult.append($title);
                             }
-							var contentValue = "";
+                            var contentValue = "";
                             if (typeof attributeObject["defaultContent"] != "undefined") {
                                 contentValue = attributeObject["defaultContent"];
-								self.$singleResult.data(attributeObject.name,attributeObject["defaultContent"]);
+                                self.$singleResult.data(attributeObject.name,attributeObject["defaultContent"]);
                             } else {
                                 contentValue = record[attributeObject.name];
-								self.$singleResult.data(attributeObject.name,record[attributeObject.name]);
+                                self.$singleResult.data(attributeObject.name,record[attributeObject.name]);
                             }
-							if (typeof attributeObject["render"] != "undefined") {
-								contentValue = attributeObject["render"](contentValue, 'display', record);
-							}
-							var $value = $('<div/>').addClass(attributeObject['class']).html(contentValue).data('name', attributeObject["name"]);
-							self.$singleResult.append($value);
+                            if (typeof attributeObject["render"] != "undefined") {
+                                contentValue = attributeObject["render"](contentValue, 'display', record);
+                            }
+                            var $value = $('<div/>').addClass(attributeObject['class']).html(contentValue).data('name', attributeObject["name"]);
+                            self.$singleResult.append($value);
 
                         }
                     });
