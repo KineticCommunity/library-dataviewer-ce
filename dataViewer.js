@@ -78,8 +78,8 @@ Data Viewer CE
                 if($(configObj.response).size() > 0 || !configObj.successEmpty){
                     // Execute success callback if defined
                     if(configObj.success){configObj.success(configObj);}
-                    // Render Results
-                    configObj = configObj.renderer.type(destination, configObj);
+                    // If configured Render Results
+                    if(configObj.renderer && configObj.renderer.type){configObj.renderer.type(destination, configObj);}
                 }
                 // No records returned
                 else{
