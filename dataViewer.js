@@ -75,7 +75,7 @@ Data Viewer CE
                     configObj.response = response;
                 }
                 // If any results or successEmpty is not defined
-                if($(configObj.response).size() > 0 || !configObj.successEmpty){
+                if($(configObj.response).length > 0 || !configObj.successEmpty){
                     // Execute success callback if defined
                     if(configObj.success){configObj.success(configObj);}
                     // If configured Render Results
@@ -301,7 +301,7 @@ Data Viewer CE
             }
             // For when DataViewer is used in a Subform. "$(configObj.forms.self('form').element()).find("#"+configObj.resultsContainerId)" finds only children of the current form.  
             var tableContainer = $(configObj.forms.self('form').element()).find('#'+configObj.resultsContainerId);
-            if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.data).size() == 1){
+            if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.data).length == 1){
                 // If it exists destroy DataTable and remove from view.
                 if (  $.fn.DataTable.isDataTable( tableContainer ) ){
                     tableContainer.DataTable().destroy([true]);
@@ -349,7 +349,7 @@ Data Viewer CE
             configObj=$.extend( true, {}, configObj, configObj.renderer.options );
             // Create a results element for Datatables and add to DOM
             configObj=initializeResultsContainer(configObj);
-            if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).size() == 1){
+            if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).length == 1){
                 //Destroy List
                 $(configObj.forms.self('form').element()).find("#"+configObj.resultsContainerId).remove();
                 //Set Results to Fields
