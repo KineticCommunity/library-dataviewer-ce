@@ -74,7 +74,7 @@ Data Viewer CE
                     configObj.response = response;
                 }
                 // If any results or successEmpty is not defined
-                if(response!==null && $(configObj.response).size() > 0 || !configObj.successEmpty){
+                if(response!==null && $(configObj.response).length > 0 || !configObj.successEmpty){
                     // Execute success callback if defined
                     if(configObj.success){configObj.success(configObj);} 
                     // If configured Render Results
@@ -253,7 +253,7 @@ Data Viewer CE
                     orderable: false,
                 });
             }
-            if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.data).size() == 1){
+            if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.data).length == 1){
                 // If it exists destroy DataTable
                 if (  $.fn.DataTable.isDataTable( '#'+configObj.resultsContainerId ) ) {
                     $('#'+configObj.resultsContainerId).DataTable().destroy([true]);
@@ -291,7 +291,7 @@ Data Viewer CE
             // Create a results element for Datatables and add to DOM
             configObj.destination=destination;
             obj=initializeResultsContainer(configObj);
-            if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).size() == 1){
+            if(typeof configObj.processSingleResult != "undefined" && configObj.processSingleResult && $(configObj.response).length == 1){
                 //Destroy List
                 $('#'+configObj.resultsContainerId).remove();
                 //Set Results to Fields
