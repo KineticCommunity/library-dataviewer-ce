@@ -79,7 +79,7 @@ Data Viewer CE
                     // Execute success callback if defined
                     if(configObj.success){configObj.success(configObj);}
                     // If configured Render Results
-                    if(configObj.renderer && configObj.renderer.type){configObj.renderer.type(destination, configObj);}
+                    if(configObj.renderer && configObj.renderer.type){configObj=configObj.renderer.type(destination, configObj);}
                 }
                 // No records returned
                 else{
