@@ -3,7 +3,8 @@
 **/
 /**
 Data Viewer CE
-2018-5-11: Various Updates
+2020-02-19
+Added code to set configObj.response to the value in the DataTable.  Previously the value was in the object and not accurate after a delete row.
 **/
 
 // create the dataViewer global object
@@ -130,7 +131,7 @@ DataViewer.renderFieldValues = function(destination, configObj) {
   setParentChildForms(destination, configObj);
   // Initialize the response if not defined
   configObj.response =
-    typeof configObj.response == 'undefined' ? [] : configObj.response;
+    typeof configObj.response == 'undefined' ? [] : $('#'+configObj.resultsContainerId).DataTable().data().toArray();
   // The processSingleResult property should not be set to true when using renderFieldValues.
   configObj.renderer.options.processSingleResult = false;
   // The removeOnClick property should not be set to true when using renderFieldValues.
@@ -177,7 +178,7 @@ DataViewer.renderResults = function(destination, configObj) {
   configObj.renderer.options.processSingleResult = false;
   // Initialize the response if not defined
   configObj.response =
-    typeof configObj.response == 'undefined' ? [] : configObj.response;
+    typeof configObj.response == 'undefined' ? [] : $('#'+configObj.resultsContainerId).DataTable().data().toArray();
   // If any results or successEmpty is not defined
   if ($(configObj.response).length > 0 || !configObj.successEmpty) {
     // Execute success callback if defined
