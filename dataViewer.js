@@ -3,8 +3,7 @@
 **/
 /**
 Data Viewer CE
-2020-02-19
-Added code to set configObj.response to the value in the DataTable.  Previously the value was in the object and not accurate after a delete row.
+2018-5-11: Various Updates
 **/
 
 // create the dataViewer global object
@@ -178,7 +177,7 @@ DataViewer.renderResults = function(destination, configObj) {
   configObj.renderer.options.processSingleResult = false;
   // Initialize the response if not defined
   configObj.response =
-    typeof configObj.response == 'undefined' ? [] : $('#'+configObj.resultsContainerId).DataTable().data().toArray();
+    typeof configObj.response == 'undefined' ? [] : configObj.response;
   // If any results or successEmpty is not defined
   if ($(configObj.response).length > 0 || !configObj.successEmpty) {
     // Execute success callback if defined
